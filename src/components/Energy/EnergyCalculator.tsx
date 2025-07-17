@@ -685,7 +685,7 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
             {/* Observações */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Observações</label>
-              <p className="text-xl font-bold text-green-600">{formatCurrencyWithVisibility(stats.averageValue, showFinancialValues)}</p>
+              <textarea
                 name="observations"
                 value={formData.observations}
                 onChange={handleFormChange}

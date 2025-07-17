@@ -13,7 +13,7 @@ interface ReportManagerProps {
 export const ReportManager: React.FC<ReportManagerProps> = ({
   properties,
   transactions,
-  summary
+  summary,
   showFinancialValues
 }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'quarter' | 'year'>('month');
