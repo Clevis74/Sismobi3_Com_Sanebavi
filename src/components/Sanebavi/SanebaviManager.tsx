@@ -11,11 +11,12 @@ import {
   exportWaterBillsToCSV,
   DEFAULT_WATER_GROUPS
 } from '../../utils/sanebaviCalculations';
-import { formatCurrency, formatDate, createLocalDate } from '../../utils/calculations';
+import { formatCurrencyWithVisibility, formatDate, createLocalDate } from '../../utils/calculations';
 
 interface SanebaviManagerProps {
   waterBills: WaterBill[];
   properties: any[]; // Lista de propriedades para vinculação
+  showFinancialValues: boolean;
   onAddWaterBill: (bill: Omit<WaterBill, 'id' | 'createdAt' | 'lastUpdated'>) => void;
   onUpdateWaterBill: (id: string, bill: Partial<WaterBill>) => void;
   onDeleteWaterBill: (id: string) => void;
@@ -24,6 +25,7 @@ interface SanebaviManagerProps {
 export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
   waterBills,
   properties,
+  showFinancialValues,
   onAddWaterBill,
   onUpdateWaterBill,
   onDeleteWaterBill
@@ -294,7 +296,7 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Valor Médio</p>
-                <p className="text-xl font-bold text-blue-600">{formatCurrency(stats.averageValue)}</p>
+                <p className="text-xl font-bold text-blue-600">{formatCurrencyWithVisibility(stats.averageValue, showFinancialValues)}</p>
               </div>
               <User className="w-8 h-8 text-blue-600" />
             </div>
@@ -510,7 +512,7 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
                         <div className="flex justify-between">
                           <span className="text-gray-600">Valor:</span>
                           <span className="font-medium text-green-600">
-                            {formatCurrency(property.proportionalValue)}
+                            {formatCurrencyWithVisibility(property.proportionalValue, showFinancialValues)}
                           </span>
                         </div>
                         
@@ -642,7 +644,7 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
                         {formatDate(bill.date)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatCurrency(bill.totalGroupValue)}
+                        {formatCurrencyWithVisibility(bill.totalGroupValue, showFinancialValues)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {totalPeople} pessoas
