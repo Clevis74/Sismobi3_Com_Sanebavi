@@ -81,7 +81,7 @@ export const generateAutomaticAlerts = (
             
             alerts.push({
               id: `water_bill_pending_${property.id}_${bill.id}`,
-              type: 'energy_bill_pending', // Reutilizando o tipo existente
+              type: 'water_bill_pending',
               propertyId: property.propertyId || '',
               tenantId: property.tenantId,
               tenantName: property.tenantName || tenant?.name,
