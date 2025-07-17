@@ -1,12 +1,13 @@
 import React from 'react';
 import { Property } from '../../types';
-import { formatCurrency } from '../../utils/calculations';
+import { formatCurrencyWithVisibility } from '../../utils/calculations';
 
 interface PropertyListProps {
   properties: Property[];
+  showFinancialValues: boolean;
 }
 
-export const PropertyList: React.FC<PropertyListProps> = ({ properties }) => {
+export const PropertyList: React.FC<PropertyListProps> = ({ properties, showFinancialValues }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'rented': return 'bg-green-100 text-green-800';
@@ -34,7 +35,7 @@ export const PropertyList: React.FC<PropertyListProps> = ({ properties }) => {
             <p className="text-sm text-gray-600">{property.address}</p>
           </div>
           <div className="text-right">
-            <p className="font-medium text-gray-900">{formatCurrency(property.rentValue)}</p>
+            <p className="font-medium text-gray-900">{formatCurrencyWithVisibility(property.rentValue, showFinancialValues)}</p>
             <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(property.status)}`}>
               {getStatusText(property.status)}
             </span>

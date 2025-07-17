@@ -25,6 +25,7 @@ function App() {
   const [documents, setDocuments] = useLocalStorage<Document[]>('documents', []);
   const [energyBills, setEnergyBills] = useLocalStorage<EnergyBill[]>('energyBills', []);
   const [waterBills, setWaterBills] = useLocalStorage<WaterBill[]>('waterBills', []);
+  const [showFinancialValues, setShowFinancialValues] = useLocalStorage<boolean>('showFinancialValues', true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Gerar alertas automáticos
@@ -255,14 +256,19 @@ function App() {
     input.click();
   };
 
+  const handleToggleFinancialValues = () => {
+    setShowFinancialValues(prev => !prev);
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard summary={summary} properties={properties} transactions={transactions} />;
+        return <Dashboard summary={summary} properties={properties} transactions={transactions} showFinancialValues={showFinancialValues} />;
       case 'properties':
         return (
           <PropertyManager
             properties={properties}
+            showFinancialValues={showFinancialValues}
             onAddProperty={addProperty}
             onUpdateProperty={updateProperty}
             onDeleteProperty={deleteProperty}
@@ -273,6 +279,7 @@ function App() {
           <TenantManager
             tenants={tenants}
             properties={properties}
+            showFinancialValues={showFinancialValues}
             onAddTenant={addTenant}
             onUpdateTenant={updateTenant}
             onDeleteTenant={deleteTenant}
@@ -283,6 +290,7 @@ function App() {
           <TransactionManager
             transactions={transactions}
             properties={properties}
+            showFinancialValues={showFinancialValues}
             onAddTransaction={addTransaction}
             onUpdateTransaction={updateTransaction}
             onDeleteTransaction={deleteTransaction}
@@ -303,6 +311,7 @@ function App() {
             properties={properties}
             transactions={transactions}
             summary={summary}
+            showFinancialValues={showFinancialValues}
           />
         );
       case 'documents':
@@ -321,6 +330,7 @@ function App() {
           <EnergyCalculator
             energyBills={energyBills}
             properties={properties}
+            showFinancialValues={showFinancialValues}
             onAddEnergyBill={addEnergyBill}
             onUpdateEnergyBill={updateEnergyBill}
             onDeleteEnergyBill={deleteEnergyBill}
@@ -331,13 +341,14 @@ function App() {
           <SanebaviManager
             waterBills={waterBills}
             properties={properties}
+            showFinancialValues={showFinancialValues}
             onAddWaterBill={addWaterBill}
             onUpdateWaterBill={updateWaterBill}
             onDeleteWaterBill={deleteWaterBill}
           />
         );
       default:
-        return <Dashboard summary={summary} properties={properties} transactions={transactions} />;
+        return <Dashboard summary={summary} properties={properties} transactions={transactions} showFinancialValues={showFinancialValues} />;
     }
   };
 
@@ -358,7 +369,12 @@ function App() {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col">
-        <Header onExport={handleExport} onImport={handleImport} />
+        <Header 
+          showFinancialValues={showFinancialValues}
+          onToggleFinancialValues={handleToggleFinancialValues}
+          onExport={handleExport} 
+          onImport={handleImport} 
+        />
         
         {/* Mobile menu button */}
         <button

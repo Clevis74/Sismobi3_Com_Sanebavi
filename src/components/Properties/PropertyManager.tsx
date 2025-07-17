@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { Plus, Edit, Trash2, MapPin, DollarSign } from 'lucide-react';
 import { Property } from '../../types';
 import { PropertyForm } from './PropertyForm';
-import { formatCurrency } from '../../utils/calculations';
+import { formatCurrencyWithVisibility } from '../../utils/calculations';
 
 interface PropertyManagerProps {
   properties: Property[];
+  showFinancialValues: boolean;
   onAddProperty: (property: Omit<Property, 'id' | 'createdAt'>) => void;
   onUpdateProperty: (id: string, property: Partial<Property>) => void;
   onDeleteProperty: (id: string) => void;
@@ -13,6 +14,7 @@ interface PropertyManagerProps {
 
 export const PropertyManager: React.FC<PropertyManagerProps> = ({
   properties,
+  showFinancialValues,
   onAddProperty,
   onUpdateProperty,
   onDeleteProperty
@@ -98,13 +100,13 @@ export const PropertyManager: React.FC<PropertyManagerProps> = ({
                 </div>
                 <div className="flex items-center text-gray-600">
                   <DollarSign className="w-4 h-4 mr-2" />
-                  <span className="text-sm font-medium">{formatCurrency(property.rentValue)}/mês</span>
+                  <span className="text-sm font-medium">{formatCurrencyWithVisibility(property.rentValue, showFinancialValues)}/mês</span>
                 </div>
               </div>
 
               <div className="text-sm text-gray-500 mb-4">
                 <p>Tipo: {property.type === 'apartment' ? 'Apartamento' : property.type === 'house' ? 'Casa' : 'Comercial'}</p>
-                <p>Valor de Compra: {formatCurrency(property.purchasePrice)}</p>
+                <p>Valor de Compra: {formatCurrencyWithVisibility(property.purchasePrice, showFinancialValues)}</p>
                 {property.tenant && (
                   <p>Inquilino: {property.tenant.name}</p>
                 )}

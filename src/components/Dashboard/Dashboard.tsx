@@ -4,35 +4,36 @@ import { MetricCard } from './MetricCard';
 import { TransactionChart } from './TransactionChart';
 import { PropertyList } from './PropertyList';
 import { FinancialSummary } from '../../types';
-import { formatCurrency } from '../../utils/calculations';
+import { formatCurrencyWithVisibility } from '../../utils/calculations';
 
 interface DashboardProps {
   summary: FinancialSummary;
   properties: any[];
   transactions: any[];
+  showFinancialValues: boolean;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ summary, properties, transactions }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ summary, properties, transactions, showFinancialValues }) => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Receita Mensal"
-          value={formatCurrency(summary.totalIncome)}
+          value={formatCurrencyWithVisibility(summary.totalIncome, showFinancialValues)}
           icon={DollarSign}
           color="green"
           trend={{ value: 8.5, isPositive: true }}
         />
         <MetricCard
           title="Despesas Mensais"
-          value={formatCurrency(summary.totalExpenses)}
+          value={formatCurrencyWithVisibility(summary.totalExpenses, showFinancialValues)}
           icon={TrendingUp}
           color="red"
           trend={{ value: -2.3, isPositive: false }}
         />
         <MetricCard
           title="Lucro Líquido"
-          value={formatCurrency(summary.netIncome)}
+          value={formatCurrencyWithVisibility(summary.netIncome, showFinancialValues)}
           icon={DollarSign}
           color="blue"
           trend={{ value: 12.8, isPositive: true }}
@@ -48,12 +49,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ summary, properties, trans
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Fluxo de Caixa - Últimos 6 Meses</h3>
-          <TransactionChart transactions={transactions} />
+          <TransactionChart transactions={transactions} showFinancialValues={showFinancialValues} />
         </div>
         
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Propriedades</h3>
-          <PropertyList properties={properties} />
+          <PropertyList properties={properties} showFinancialValues={showFinancialValues} />
         </div>
       </div>
 
@@ -71,7 +72,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ summary, properties, trans
           <div className="text-center p-4 bg-yellow-50 rounded-lg">
             <p className="text-sm text-gray-600">Receita Média/Propriedade</p>
             <p className="text-xl font-bold text-yellow-600">
-              {formatCurrency(summary.rentedProperties > 0 ? summary.totalIncome / summary.rentedProperties : 0)}
+              {formatCurrencyWithVisibility(summary.rentedProperties > 0 ? summary.totalIncome / summary.rentedProperties : 0, showFinancialValues)}
             </p>
           </div>
         </div>

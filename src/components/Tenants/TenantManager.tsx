@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Plus, Edit, Trash2, User, Phone, Mail, Calendar } from 'lucide-react';
 import { Tenant } from '../../types';
 import { TenantForm } from './TenantForm';
-import { formatDate, formatCurrency } from '../../utils/calculations';
+import { formatDate, formatCurrencyWithVisibility } from '../../utils/calculations';
 
 interface TenantManagerProps {
   tenants: Tenant[];
   properties: any[];
+  showFinancialValues: boolean;
   onAddTenant: (tenant: Omit<Tenant, 'id'>) => void;
   onUpdateTenant: (id: string, tenant: Partial<Tenant>) => void;
   onDeleteTenant: (id: string) => void;
@@ -15,6 +16,7 @@ interface TenantManagerProps {
 export const TenantManager: React.FC<TenantManagerProps> = ({
   tenants,
   properties,
+  showFinancialValues,
   onAddTenant,
   onUpdateTenant,
   onDeleteTenant
@@ -125,8 +127,8 @@ export const TenantManager: React.FC<TenantManagerProps> = ({
                 <div className="text-sm text-gray-500 mb-4">
                   <p>Propriedade: {linkedProperty?.name || 'Não vinculada'}</p>
                   {tenant.cpf && <p>CPF: {tenant.cpf}</p>}
-                  <p>Aluguel: {formatCurrency(tenant.monthlyRent)}</p>
-                  <p>Calção: {formatCurrency(tenant.deposit)}</p>
+                  <p>Aluguel: {formatCurrencyWithVisibility(tenant.monthlyRent, showFinancialValues)}</p>
+                  <p>Calção: {formatCurrencyWithVisibility(tenant.deposit, showFinancialValues)}</p>
                   {tenant.paymentMethod && (
                     <p>Pagamento: {tenant.paymentMethod}{tenant.installments && tenant.paymentMethod === 'A prazo' ? ` (${tenant.installments})` : ''}</p>
                   )}

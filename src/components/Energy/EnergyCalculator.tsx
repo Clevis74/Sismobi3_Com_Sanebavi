@@ -11,11 +11,12 @@ import {
   calculateConsumptionStats,
   DEFAULT_ENERGY_GROUPS
 } from '../../utils/energyCalculations';
-import { formatCurrency, formatDate, createLocalDate } from '../../utils/calculations';
+import { formatCurrencyWithVisibility, formatDate, createLocalDate } from '../../utils/calculations';
 
 interface EnergyCalculatorProps {
   energyBills: EnergyBill[];
   properties: any[]; // Lista de propriedades para vinculação
+  showFinancialValues: boolean;
   onAddEnergyBill: (bill: Omit<EnergyBill, 'id' | 'createdAt' | 'lastUpdated'>) => void;
   onUpdateEnergyBill: (id: string, bill: Partial<EnergyBill>) => void;
   onDeleteEnergyBill: (id: string) => void;
@@ -24,6 +25,7 @@ interface EnergyCalculatorProps {
 export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
   energyBills,
   properties,
+  showFinancialValues,
   onAddEnergyBill,
   onUpdateEnergyBill,
   onDeleteEnergyBill
@@ -624,7 +626,7 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
                         <div className="flex justify-between">
                           <span className="text-gray-600">Valor:</span>
                           <span className="font-medium text-green-600">
-                            {formatCurrency(property.proportionalValue)}
+                           {formatCurrencyWithVisibility(property.proportionalValue, showFinancialValues)}
                           </span>
                         </div>
                         
@@ -683,7 +685,7 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
             {/* Observações */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Observações</label>
-              <textarea
+              <p className="text-xl font-bold text-green-600">{formatCurrencyWithVisibility(stats.averageValue, showFinancialValues)}</p>
                 name="observations"
                 value={formData.observations}
                 onChange={handleFormChange}
@@ -754,7 +756,7 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
                       {formatDate(bill.date)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatCurrency(bill.totalGroupValue)}
+                      {formatCurrencyWithVisibility(bill.totalGroupValue, showFinancialValues)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {bill.totalGroupConsumption.toFixed(0)} kWh

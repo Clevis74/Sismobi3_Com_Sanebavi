@@ -41,6 +41,14 @@ export const calculateFinancialSummary = (
 };
 
 export const formatCurrency = (amount: number): string => {
+  return formatCurrencyWithVisibility(amount, true);
+};
+
+export const formatCurrencyWithVisibility = (amount: number, showValues: boolean = true): string => {
+  if (!showValues) {
+    return '••••';
+  }
+  
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL'

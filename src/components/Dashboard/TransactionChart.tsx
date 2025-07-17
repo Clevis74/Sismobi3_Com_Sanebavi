@@ -1,12 +1,13 @@
 import React from 'react';
 import { Transaction } from '../../types';
-import { formatCurrency } from '../../utils/calculations';
+import { formatCurrencyWithVisibility } from '../../utils/calculations';
 
 interface TransactionChartProps {
   transactions: Transaction[];
+  showFinancialValues: boolean;
 }
 
-export const TransactionChart: React.FC<TransactionChartProps> = ({ transactions }) => {
+export const TransactionChart: React.FC<TransactionChartProps> = ({ transactions, showFinancialValues }) => {
   const last6Months = Array.from({ length: 6 }, (_, i) => {
     const date = new Date();
     date.setMonth(date.getMonth() - i);
@@ -56,12 +57,12 @@ export const TransactionChart: React.FC<TransactionChartProps> = ({ transactions
               <div 
                 className="w-4 bg-green-500 rounded-t"
                 style={{ height: `${(data.income / maxValue) * 200}px` }}
-                title={`Receita: ${formatCurrency(data.income)}`}
+                title={`Receita: ${formatCurrencyWithVisibility(data.income, showFinancialValues)}`}
               />
               <div 
                 className="w-4 bg-red-500 rounded-t"
                 style={{ height: `${(data.expenses / maxValue) * 200}px` }}
-                title={`Despesa: ${formatCurrency(data.expenses)}`}
+                title={`Despesa: ${formatCurrencyWithVisibility(data.expenses, showFinancialValues)}`}
               />
             </div>
             <span className="text-xs text-gray-600">{data.month}</span>

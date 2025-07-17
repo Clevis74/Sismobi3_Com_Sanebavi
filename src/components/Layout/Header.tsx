@@ -1,12 +1,19 @@
 import React from 'react';
-import { Calendar, Download, Upload } from 'lucide-react';
+import { Calendar, Download, Upload, Eye, EyeOff } from 'lucide-react';
 
 interface HeaderProps {
+  showFinancialValues: boolean;
+  onToggleFinancialValues: () => void;
   onExport: () => void;
   onImport: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onExport, onImport }) => {
+export const Header: React.FC<HeaderProps> = ({ 
+  showFinancialValues, 
+  onToggleFinancialValues, 
+  onExport, 
+  onImport 
+}) => {
   const currentDate = new Date().toLocaleDateString('pt-BR', {
     weekday: 'long',
     year: 'numeric',
@@ -25,6 +32,23 @@ export const Header: React.FC<HeaderProps> = ({ onExport, onImport }) => {
         </div>
         
         <div className="flex items-center space-x-4">
+          <button
+            onClick={onToggleFinancialValues}
+            className="flex items-center px-4 py-2 text-gray-700 hover:text-blue-600 transition-colors"
+            title={showFinancialValues ? 'Ocultar valores financeiros' : 'Mostrar valores financeiros'}
+          >
+            {showFinancialValues ? (
+              <>
+                <Eye className="w-4 h-4 mr-2" />
+                Ocultar Valores
+              </>
+            ) : (
+              <>
+                <EyeOff className="w-4 h-4 mr-2" />
+                Mostrar Valores
+              </>
+            )}
+          </button>
           <button
             onClick={onImport}
             className="flex items-center px-4 py-2 text-gray-700 hover:text-blue-600 transition-colors"

@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Plus, Edit, Trash2, Calendar, DollarSign, Tag, Filter } from 'lucide-react';
 import { Transaction } from '../../types';
 import { TransactionForm } from './TransactionForm';
-import { formatCurrency, formatDate } from '../../utils/calculations';
+import { formatCurrencyWithVisibility, formatDate } from '../../utils/calculations';
 
 interface TransactionManagerProps {
   transactions: Transaction[];
   properties: any[];
+  showFinancialValues: boolean;
   onAddTransaction: (transaction: Omit<Transaction, 'id'>) => void;
   onUpdateTransaction: (id: string, transaction: Partial<Transaction>) => void;
   onDeleteTransaction: (id: string) => void;
@@ -15,6 +16,7 @@ interface TransactionManagerProps {
 export const TransactionManager: React.FC<TransactionManagerProps> = ({
   transactions,
   properties,
+  showFinancialValues,
   onAddTransaction,
   onUpdateTransaction,
   onDeleteTransaction
@@ -175,7 +177,7 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
                       <div className="flex items-center">
                         <DollarSign className="w-4 h-4 text-gray-400 mr-1" />
                         <span className={`text-sm font-medium ${getTransactionColor(transaction.type)}`}>
-                          {getTransactionIcon(transaction.type)}{formatCurrency(transaction.amount)}
+                          {getTransactionIcon(transaction.type)}{formatCurrencyWithVisibility(transaction.amount, showFinancialValues)}
                         </span>
                       </div>
                     </td>
