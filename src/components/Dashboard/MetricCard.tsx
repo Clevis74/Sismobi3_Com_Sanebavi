@@ -27,11 +27,11 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-100">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-100 dark:border-gray-700">
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{value}</p>
           {trend && (
             <p className={`text-sm mt-2 ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
               {trend.isPositive ? '+' : ''}{trend.value}% em relação ao mês anterior

@@ -87,7 +87,7 @@ export const TenantManager: React.FC<TenantManagerProps> = ({
         {tenants.map((tenant) => {
           const linkedProperty = properties.find(p => p.id === tenant.propertyId);
           return (
-            <div key={tenant.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+            <div key={tenant.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700">
               <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center">
@@ -95,7 +95,7 @@ export const TenantManager: React.FC<TenantManagerProps> = ({
                       <User className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{tenant.name}</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{tenant.name}</h3>
                       <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(tenant.status)}`}>
                         {getStatusText(tenant.status)}
                       </span>
@@ -104,27 +104,27 @@ export const TenantManager: React.FC<TenantManagerProps> = ({
                 </div>
 
                 <div className="space-y-2 mb-4">
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-gray-600 dark:text-gray-400">
                     <Mail className="w-4 h-4 mr-2" />
                     <span className="text-sm">{tenant.email}</span>
                   </div>
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-gray-600 dark:text-gray-400">
                     <Phone className="w-4 h-4 mr-2" />
                     <span className="text-sm">{tenant.phone}</span>
                   </div>
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-gray-600 dark:text-gray-400">
                     <Calendar className="w-4 h-4 mr-2" />
                     <span className="text-sm">Início: {formatDate(tenant.startDate)}</span>
                   </div>
                   {tenant.agreedPaymentDate && (
-                    <div className="flex items-center text-gray-600">
+                    <div className="flex items-center text-gray-600 dark:text-gray-400">
                       <Calendar className="w-4 h-4 mr-2" />
                       <span className="text-sm">Pagamento: {formatDate(tenant.agreedPaymentDate)}</span>
                     </div>
                   )}
                 </div>
 
-                <div className="text-sm text-gray-500 mb-4">
+                <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                   <p>Propriedade: {linkedProperty?.name || 'Não vinculada'}</p>
                   {tenant.cpf && <p>CPF: {tenant.cpf}</p>}
                   <p>Aluguel: {formatCurrencyWithVisibility(tenant.monthlyRent, showFinancialValues)}</p>

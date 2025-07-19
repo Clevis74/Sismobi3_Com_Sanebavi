@@ -26,7 +26,17 @@ function App() {
   const [energyBills, setEnergyBills] = useLocalStorage<EnergyBill[]>('energyBills', []);
   const [waterBills, setWaterBills] = useLocalStorage<WaterBill[]>('waterBills', []);
   const [showFinancialValues, setShowFinancialValues] = useLocalStorage<boolean>('showFinancialValues', true);
+  const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('theme', 'light');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Apply theme to document element
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   // Gerar alertas automáticos
   useEffect(() => {
@@ -260,6 +270,10 @@ function App() {
     setShowFinancialValues(prev => !prev);
   };
 
+  const handleToggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
@@ -353,7 +367,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex">
       {/* Sidebar */}
       <div className={`${isMobileMenuOpen ? 'block' : 'hidden'} lg:block fixed lg:relative z-30 w-64 h-full`}>
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -372,6 +386,7 @@ function App() {
         <Header 
           showFinancialValues={showFinancialValues}
           onToggleFinancialValues={handleToggleFinancialValues}
+          onToggleTheme={handleToggleTheme}
           onExport={handleExport} 
           onImport={handleImport} 
         />

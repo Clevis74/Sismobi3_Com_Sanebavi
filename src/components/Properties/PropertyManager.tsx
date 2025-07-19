@@ -84,27 +84,27 @@ export const PropertyManager: React.FC<PropertyManagerProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {properties.map((property) => (
-          <div key={property.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+          <div key={property.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">{property.name}</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{property.name}</h3>
                 <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(property.status)}`}>
                   {getStatusText(property.status)}
                 </span>
               </div>
 
               <div className="space-y-2 mb-4">
-                <div className="flex items-center text-gray-600">
+                <div className="flex items-center text-gray-600 dark:text-gray-400">
                   <MapPin className="w-4 h-4 mr-2" />
                   <span className="text-sm">{property.address}</span>
                 </div>
-                <div className="flex items-center text-gray-600">
+                <div className="flex items-center text-gray-600 dark:text-gray-400">
                   <DollarSign className="w-4 h-4 mr-2" />
                   <span className="text-sm font-medium">{formatCurrencyWithVisibility(property.rentValue, showFinancialValues)}/mês</span>
                 </div>
               </div>
 
-              <div className="text-sm text-gray-500 mb-4">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                 <p>Tipo: {property.type === 'apartment' ? 'Apartamento' : property.type === 'house' ? 'Casa' : 'Comercial'}</p>
                 <p>Valor de Compra: {formatCurrencyWithVisibility(property.purchasePrice, showFinancialValues)}</p>
                 {property.tenant && (

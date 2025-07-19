@@ -42,11 +42,11 @@ export const TransactionChart: React.FC<TransactionChartProps> = ({ transactions
       <div className="flex justify-end space-x-4 text-sm">
         <div className="flex items-center">
           <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-          <span>Receitas</span>
+          <span className="dark:text-gray-300">Receitas</span>
         </div>
         <div className="flex items-center">
           <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-          <span>Despesas</span>
+          <span className="dark:text-gray-300">Despesas</span>
         </div>
       </div>
       
@@ -65,7 +65,7 @@ export const TransactionChart: React.FC<TransactionChartProps> = ({ transactions
                 title={`Despesa: ${formatCurrencyWithVisibility(data.expenses, showFinancialValues)}`}
               />
             </div>
-            <span className="text-xs text-gray-600">{data.month}</span>
+            <span className="text-xs text-gray-600 dark:text-gray-400">{data.month}</span>
           </div>
         ))}
       </div>

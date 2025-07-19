@@ -32,10 +32,10 @@ const menuItems = [
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
   return (
-    <div className="w-64 bg-white shadow-lg h-full flex flex-col">
-      <div className="p-6 border-b">
-        <h1 className="text-xl font-bold text-gray-800">Gestão Imobiliária</h1>
-        <p className="text-sm text-gray-600">Controle Financeiro</p>
+    <div className="w-64 bg-white dark:bg-gray-800 shadow-lg h-full flex flex-col">
+      <div className="p-6 border-b dark:border-gray-700">
+        <h1 className="text-xl font-bold text-gray-800 dark:text-gray-200">Gestão Imobiliária</h1>
+        <p className="text-sm text-gray-600 dark:text-gray-400">Controle Financeiro</p>
       </div>
       
       <nav className="flex-1 pt-4">
@@ -47,8 +47,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center px-6 py-3 text-left transition-colors duration-200 ${
                 activeTab === item.id
-                  ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600'
-                  : 'text-gray-700 hover:bg-gray-50'
+                  ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-r-2 border-blue-600 dark:border-blue-400'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
               <Icon className="w-5 h-5 mr-3" />

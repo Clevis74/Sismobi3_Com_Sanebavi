@@ -29,13 +29,13 @@ export const PropertyList: React.FC<PropertyListProps> = ({ properties, showFina
   return (
     <div className="space-y-3">
       {properties.slice(0, 5).map((property) => (
-        <div key={property.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+        <div key={property.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
           <div className="flex-1">
-            <h4 className="font-medium text-gray-900">{property.name}</h4>
-            <p className="text-sm text-gray-600">{property.address}</p>
+            <h4 className="font-medium text-gray-900 dark:text-gray-100">{property.name}</h4>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{property.address}</p>
           </div>
           <div className="text-right">
-            <p className="font-medium text-gray-900">{formatCurrencyWithVisibility(property.rentValue, showFinancialValues)}</p>
+            <p className="font-medium text-gray-900 dark:text-gray-100">{formatCurrencyWithVisibility(property.rentValue, showFinancialValues)}</p>
             <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(property.status)}`}>
               {getStatusText(property.status)}
             </span>

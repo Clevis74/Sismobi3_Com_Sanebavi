@@ -117,47 +117,47 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
       )}
 
       {/* Lista de Transações */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Data
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Propriedade
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Tipo
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Categoria
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Descrição
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Valor
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Ações
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredTransactions.map((transaction) => {
                 const property = properties.find(p => p.id === transaction.propertyId);
                 return (
-                  <tr key={transaction.id} className="hover:bg-gray-50">
+                  <tr key={transaction.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <Calendar className="w-4 h-4 text-gray-400 mr-2" />
-                        <span className="text-sm text-gray-900">{formatDate(transaction.date)}</span>
+                        <span className="text-sm text-gray-900 dark:text-gray-100">{formatDate(transaction.date)}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-900">{property?.name || 'Propriedade não encontrada'}</span>
+                      <span className="text-sm text-gray-900 dark:text-gray-100">{property?.name || 'Propriedade não encontrada'}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`text-sm font-medium ${getTransactionColor(transaction.type)}`}>
@@ -167,11 +167,11 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <Tag className="w-4 h-4 text-gray-400 mr-2" />
-                        <span className="text-sm text-gray-900">{transaction.category}</span>
+                        <span className="text-sm text-gray-900 dark:text-gray-100">{transaction.category}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm text-gray-900">{transaction.description}</span>
+                      <span className="text-sm text-gray-900 dark:text-gray-100">{transaction.description}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
