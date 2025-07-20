@@ -143,6 +143,13 @@ export interface WaterGroup {
   properties: string[]; // Nomes das propriedades
 }
 
+export interface Informor {
+  id: string;
+  nome: string;
+  valor: number;
+  vencimento: string;
+}
+
 export interface FinancialSummary {
   totalIncome: number;
   totalExpenses: number;
