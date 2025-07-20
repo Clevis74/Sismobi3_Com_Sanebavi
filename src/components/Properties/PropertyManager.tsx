@@ -6,6 +6,8 @@ import { formatCurrencyWithVisibility } from '../../utils/calculations';
 import { useActivation } from '../../contexts/ActivationContext';
 import { LoadingButton, LoadingOverlay } from '../UI/LoadingSpinner';
 import { HighlightCard, AnimatedListItem } from '../UI/HighlightCard';
+import { useConfirmationModal } from '../UI/ConfirmationModal';
+import { useEnhancedToast } from '../UI/EnhancedToast';
 
 interface PropertyManagerProps {
   properties: Property[];
@@ -29,6 +31,9 @@ export const PropertyManager: React.FC<PropertyManagerProps> = ({
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [newItemId, setNewItemId] = useState<string | null>(null);
 
+  const { showConfirmation, ConfirmationModalComponent } = useConfirmationModal();
+  const toast = useEnhancedToast();
+
   // Configurações do modo DEMO
   const DEMO_LIMITS = {
     maxProperties: 5
@@ -38,6 +43,7 @@ export const PropertyManager: React.FC<PropertyManagerProps> = ({
   const canAddProperty = !isDemoMode || properties.length < DEMO_LIMITS.maxProperties;
   const handleAddProperty = (propertyData: Omit<Property, 'id' | 'createdAt'>) => {
     if (isAtDemoLimit) {
+      toast.demoLimit('propriedades', DEMO_LIMITS.maxProperties);
       return; // Não permite adicionar se estiver no limite do demo
     }
     setLoading(true);
@@ -53,6 +59,7 @@ export const PropertyManager: React.FC<PropertyManagerProps> = ({
       onAddProperty(propertyData);
       setShowForm(false);
       setLoading(false);
+      toast.created('Propriedade');
       
       // Destacar o novo item
       setHighlightedId(newProperty.id);
@@ -79,12 +86,26 @@ export const PropertyManager: React.FC<PropertyManagerProps> = ({
         setEditingProperty(null);
         setShowForm(false);
         setLoading(false);
+        toast.updated('Propriedade');
         
         // Destacar o item editado
         setHighlightedId(editingProperty.id);
         setTimeout(() => setHighlightedId(null), 3000);
       }, 600);
     }
+  };
+
+  const handleDeleteProperty = (property: Property) => {
+    showConfirmation({
+      title: 'Excluir Propriedade',
+      message: `Tem certeza que deseja excluir "${property.name}"? Esta ação não pode ser desfeita e removerá todas as transações relacionadas.`,
+      confirmText: 'Excluir',
+      type: 'danger',
+      onConfirm: () => {
+        onDeleteProperty(property.id);
+        toast.deleted('Propriedade');
+      }
+    });
   };
 
   const getStatusColor = (status: string) => {
@@ -210,6 +231,7 @@ export const PropertyManager: React.FC<PropertyManagerProps> = ({
                   </button>
                   <button
                     onClick={() => onDeleteProperty(property.id)}
+                    onClick={() => handleDeleteProperty(property)}
                     disabled={loading}
                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                   >
@@ -228,6 +250,8 @@ export const PropertyManager: React.FC<PropertyManagerProps> = ({
           <p className="text-gray-400 mt-2">Comece adicionando sua primeira propriedade</p>
         </div>
       )}
+      
+      {ConfirmationModalComponent}
     </div>
   );
 };

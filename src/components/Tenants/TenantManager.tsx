@@ -6,6 +6,8 @@ import { formatDate, formatCurrencyWithVisibility } from '../../utils/calculatio
 import { useActivation } from '../../contexts/ActivationContext';
 import { LoadingButton, LoadingOverlay } from '../UI/LoadingSpinner';
 import { HighlightCard, AnimatedListItem } from '../UI/HighlightCard';
+import { useConfirmationModal } from '../UI/ConfirmationModal';
+import { useEnhancedToast } from '../UI/EnhancedToast';
 
 interface TenantManagerProps {
   tenants: Tenant[];
@@ -31,6 +33,9 @@ export const TenantManager: React.FC<TenantManagerProps> = ({
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [newItemId, setNewItemId] = useState<string | null>(null);
 
+  const { showConfirmation, ConfirmationModalComponent } = useConfirmationModal();
+  const toast = useEnhancedToast();
+
   // Configurações do modo DEMO
   const DEMO_LIMITS = {
     maxTenants: 10
@@ -40,6 +45,7 @@ export const TenantManager: React.FC<TenantManagerProps> = ({
   const canAddTenant = !isDemoMode || tenants.length < DEMO_LIMITS.maxTenants;
   const handleAddTenant = (tenantData: Omit<Tenant, 'id'>) => {
     if (isAtDemoLimit) {
+      toast.demoLimit('inquilinos', DEMO_LIMITS.maxTenants);
       return; // Não permite adicionar se estiver no limite do demo
     }
     setLoading(true);
@@ -54,6 +60,7 @@ export const TenantManager: React.FC<TenantManagerProps> = ({
       onAddTenant(tenantData);
       setShowForm(false);
       setLoading(false);
+      toast.created('Inquilino');
       
       // Destacar o novo item
       setHighlightedId(newTenant.id);
@@ -80,12 +87,26 @@ export const TenantManager: React.FC<TenantManagerProps> = ({
         setEditingTenant(null);
         setShowForm(false);
         setLoading(false);
+        toast.updated('Inquilino');
         
         // Destacar o item editado
         setHighlightedId(editingTenant.id);
         setTimeout(() => setHighlightedId(null), 3000);
       }, 600);
     }
+  };
+
+  const handleDeleteTenant = (tenant: Tenant) => {
+    showConfirmation({
+      title: 'Excluir Inquilino',
+      message: `Tem certeza que deseja excluir "${tenant.name}"? Esta ação removerá o vínculo com a propriedade e não pode ser desfeita.`,
+      confirmText: 'Excluir',
+      type: 'danger',
+      onConfirm: () => {
+        onDeleteTenant(tenant.id);
+        toast.deleted('Inquilino');
+      }
+    });
   };
 
   const getStatusColor = (status: string) => {
@@ -237,6 +258,7 @@ export const TenantManager: React.FC<TenantManagerProps> = ({
                     </button>
                     <button
                       onClick={() => onDeleteTenant(tenant.id)}
+                      onClick={() => handleDeleteTenant(tenant)}
                       disabled={loading}
                       className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                     >
@@ -256,6 +278,8 @@ export const TenantManager: React.FC<TenantManagerProps> = ({
           <p className="text-gray-400 mt-2">Comece adicionando seu primeiro inquilino</p>
         </div>
       )}
+      
+      {ConfirmationModalComponent}
     </div>
   );
 };

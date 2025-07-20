@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ActivationProvider } from './contexts/ActivationContext';
+import { useEnhancedToast } from './components/UI/EnhancedToast';
 import { Sidebar } from './components/Layout/Sidebar';
 import { Header } from './components/Layout/Header';
 import { Dashboard } from './components/Dashboard/Dashboard';
@@ -49,6 +50,16 @@ function App() {
   const [showFinancialValues, setShowFinancialValues] = useLocalStorage<boolean>('showFinancialValues', true);
   const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('theme', 'light');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Listener para navegação para ativação
+  useEffect(() => {
+    const handleNavigateToActivation = () => {
+      setActiveTab('activation');
+    };
+
+    window.addEventListener('navigate-to-activation', handleNavigateToActivation);
+    return () => window.removeEventListener('navigate-to-activation', handleNavigateToActivation);
+  }, []);
 
   // Apply theme to document element
   useEffect(() => {
