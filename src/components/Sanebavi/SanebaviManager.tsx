@@ -13,6 +13,7 @@ import {
 } from '../../utils/sanebaviCalculations';
 import { formatCurrencyWithVisibility, formatDate, createLocalDate } from '../../utils/calculations';
 import { useActivation } from '../../contexts/ActivationContext';
+import { LoadingButton } from '../UI/LoadingSpinner';
 
 interface SanebaviManagerProps {
   waterBills: WaterBill[];
@@ -36,6 +37,7 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
   const [showHistory, setShowHistory] = useState(false);
   const [editingBill, setEditingBill] = useState<WaterBill | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<string>(DEFAULT_WATER_GROUPS[0].id);
+  const [loading, setLoading] = useState(false);
   
   // Configurações do modo DEMO
   const DEMO_LIMITS = {
@@ -173,6 +175,8 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
       return; // Não permite adicionar se estiver no limite do demo
     }
     
+    setLoading(true);
+    
     const selectedGroupData = DEFAULT_WATER_GROUPS.find(g => g.id === selectedGroup);
     if (!selectedGroupData) return;
     
@@ -186,16 +190,20 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
       propertiesInGroup: propertiesInGroup
     };
 
-    if (editingBill) {
-      onUpdateWaterBill(editingBill.id, billData);
-    } else {
-      onAddWaterBill(billData);
-    }
+    // Simular operação assíncrona
+    setTimeout(() => {
+      if (editingBill) {
+        onUpdateWaterBill(editingBill.id, billData);
+      } else {
+        onAddWaterBill(billData);
+      }
 
-    // Reset form
-    setShowForm(false);
-    setEditingBill(null);
-    resetForm();
+      // Reset form
+      setShowForm(false);
+      setEditingBill(null);
+      resetForm();
+      setLoading(false);
+    }, 800);
   };
 
   const resetForm = () => {
@@ -305,19 +313,16 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
             {showHistory ? 'Ocultar' : 'Ver'} Histórico
           </button>
           <div className="flex flex-col items-end space-y-2">
-            <button
+            <LoadingButton
+              loading={loading}
               onClick={() => setShowForm(true)}
               disabled={isAtDemoLimit}
-              className={`px-4 py-2 rounded-lg transition-colors flex items-center ${
-                isAtDemoLimit
-                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
+              variant={isAtDemoLimit ? 'secondary' : 'primary'}
               title={isAtDemoLimit ? 'Limite do modo DEMO atingido' : 'Adicionar nova conta'}
             >
               <Plus className="w-4 h-4 mr-2" />
               Nova Conta
-            </button>
+            </LoadingButton>
             {isAtDemoLimit && (
               <p className="text-xs text-red-600 text-right max-w-xs">
                 Limite de {DEMO_LIMITS.maxWaterBills} contas atingido no modo DEMO.
@@ -642,17 +647,19 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
                   setEditingBill(null);
                   resetForm();
                 }}
+                disabled={loading}
                 className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Cancelar
               </button>
-              <button
-                type="submit"
+              <LoadingButton
+                loading={loading}
                 disabled={!validation.isValid}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                variant="primary"
+                className="px-4 py-2"
               >
                 {editingBill ? 'Atualizar' : 'Salvar'}
-              </button>
+              </LoadingButton>
             </div>
           </form>
         </div>

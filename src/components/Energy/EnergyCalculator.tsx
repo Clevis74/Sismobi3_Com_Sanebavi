@@ -13,6 +13,7 @@ import {
 } from '../../utils/energyCalculations';
 import { formatCurrencyWithVisibility, formatDate, createLocalDate, formatCurrency } from '../../utils/calculations';
 import { useActivation } from '../../contexts/ActivationContext';
+import { LoadingButton } from '../UI/LoadingSpinner';
 
 interface EnergyCalculatorProps {
   energyBills: EnergyBill[];
@@ -36,6 +37,7 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
   const [showHistory, setShowHistory] = useState(false);
   const [editingBill, setEditingBill] = useState<EnergyBill | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<string>(DEFAULT_ENERGY_GROUPS[0].id);
+  const [loading, setLoading] = useState(false);
   
   // Configurações do modo DEMO
   const DEMO_LIMITS = {
@@ -223,6 +225,8 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
       return; // Não permite adicionar se estiver no limite do demo
     }
     
+    setLoading(true);
+    
     const selectedGroupData = DEFAULT_ENERGY_GROUPS.find(g => g.id === selectedGroup);
     if (!selectedGroupData) return;
     
@@ -237,16 +241,20 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
       propertiesInGroup: propertiesInGroup
     };
 
-    if (editingBill) {
-      onUpdateEnergyBill(editingBill.id, billData);
-    } else {
-      onAddEnergyBill(billData);
-    }
+    // Simular operação assíncrona
+    setTimeout(() => {
+      if (editingBill) {
+        onUpdateEnergyBill(editingBill.id, billData);
+      } else {
+        onAddEnergyBill(billData);
+      }
 
-    // Reset form
-    setShowForm(false);
-    setEditingBill(null);
-    resetForm();
+      // Reset form
+      setShowForm(false);
+      setEditingBill(null);
+      resetForm();
+      setLoading(false);
+    }, 800);
   };
 
   const resetForm = () => {
@@ -347,19 +355,16 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
             {showHistory ? 'Ocultar' : 'Ver'} Histórico
           </button>
           <div className="flex flex-col items-end space-y-2">
-            <button
+            <LoadingButton
+              loading={loading}
               onClick={() => setShowForm(true)}
               disabled={isAtDemoLimit}
-              className={`px-4 py-2 rounded-lg transition-colors flex items-center ${
-                isAtDemoLimit
-                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
+              variant={isAtDemoLimit ? 'secondary' : 'primary'}
               title={isAtDemoLimit ? 'Limite do modo DEMO atingido' : 'Adicionar nova conta'}
             >
               <Plus className="w-4 h-4 mr-2" />
               Nova Conta
-            </button>
+            </LoadingButton>
             {isAtDemoLimit && (
               <p className="text-xs text-red-600 text-right max-w-xs">
                 Limite de {DEMO_LIMITS.maxEnergyBills} contas atingido no modo DEMO.
@@ -750,17 +755,19 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
                   setEditingBill(null);
                   resetForm();
                 }}
+                disabled={loading}
                 className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Cancelar
               </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+              <LoadingButton
+                loading={loading}
+                variant="primary"
+                className="px-4 py-2 flex items-center"
               >
                 <Save className="w-4 h-4 mr-2" />
                 {editingBill ? 'Atualizar' : 'Salvar'}
-              </button>
+              </LoadingButton>
             </div>
           </form>
         </div>

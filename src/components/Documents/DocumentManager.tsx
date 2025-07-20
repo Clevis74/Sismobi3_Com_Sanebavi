@@ -4,6 +4,8 @@ import { Document, Property, Tenant } from '../../types';
 import { DocumentForm } from './DocumentForm';
 import { formatDate } from '../../utils/calculations';
 import { useActivation } from '../../contexts/ActivationContext';
+import { LoadingButton, LoadingOverlay } from '../UI/LoadingSpinner';
+import { HighlightCard, AnimatedListItem } from '../UI/HighlightCard';
 
 interface DocumentManagerProps {
   documents: Document[];
@@ -27,6 +29,9 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
   const [editingDocument, setEditingDocument] = useState<Document | null>(null);
   const [filter, setFilter] = useState<'all' | 'valid' | 'expired' | 'pending'>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [loading, setLoading] = useState(false);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [newItemId, setNewItemId] = useState<string | null>(null);
 
   // Configurações do modo DEMO
   const DEMO_LIMITS = {
@@ -39,8 +44,28 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
     if (isAtDemoLimit) {
       return; // Não permite adicionar se estiver no limite do demo
     }
-    onAddDocument(documentData);
-    setShowForm(false);
+    setLoading(true);
+    
+    // Simular operação assíncrona
+    setTimeout(() => {
+      const newDocument = {
+        ...documentData,
+        id: Date.now().toString(),
+        lastUpdated: new Date()
+      };
+      
+      onAddDocument(documentData);
+      setShowForm(false);
+      setLoading(false);
+      
+      // Destacar o novo item
+      setHighlightedId(newDocument.id);
+      setNewItemId(newDocument.id);
+      
+      // Limpar destaque após 3 segundos
+      setTimeout(() => setHighlightedId(null), 3000);
+      setTimeout(() => setNewItemId(null), 1000);
+    }, 800);
   };
 
   const handleEditDocument = (document: Document) => {
@@ -50,9 +75,19 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
 
   const handleUpdateDocument = (documentData: Omit<Document, 'id' | 'lastUpdated'>) => {
     if (editingDocument) {
-      onUpdateDocument(editingDocument.id, documentData);
-      setEditingDocument(null);
-      setShowForm(false);
+      setLoading(true);
+      
+      // Simular operação assíncrona
+      setTimeout(() => {
+        onUpdateDocument(editingDocument.id, documentData);
+        setEditingDocument(null);
+        setShowForm(false);
+        setLoading(false);
+        
+        // Destacar o item editado
+        setHighlightedId(editingDocument.id);
+        setTimeout(() => setHighlightedId(null), 3000);
+      }, 600);
     }
   };
 
@@ -105,19 +140,16 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
           )}
         </div>
         <div className="flex flex-col items-end space-y-2">
-          <button
+          <LoadingButton
+            loading={loading}
             onClick={() => setShowForm(true)}
             disabled={isAtDemoLimit}
-            className={`px-4 py-2 rounded-lg transition-colors flex items-center ${
-              isAtDemoLimit
-                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
-            }`}
+            variant={isAtDemoLimit ? 'secondary' : 'primary'}
             title={isAtDemoLimit ? 'Limite do modo DEMO atingido' : 'Adicionar novo documento'}
           >
             <Plus className="w-4 h-4 mr-2" />
             Novo Documento
-          </button>
+          </LoadingButton>
           {isAtDemoLimit && (
             <p className="text-xs text-red-600 text-right max-w-xs">
               Limite de {DEMO_LIMITS.maxDocuments} documentos atingido no modo DEMO. 
@@ -174,16 +206,18 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
       </div>
 
       {showForm && (
-        <DocumentForm
-          document={editingDocument}
-          properties={properties}
-          tenants={tenants}
-          onSubmit={editingDocument ? handleUpdateDocument : handleAddDocument}
-          onCancel={() => {
-            setShowForm(false);
-            setEditingDocument(null);
-          }}
-        />
+        <LoadingOverlay loading={loading} message={editingDocument ? "Atualizando documento..." : "Criando documento..."}>
+          <DocumentForm
+            document={editingDocument}
+            properties={properties}
+            tenants={tenants}
+            onSubmit={editingDocument ? handleUpdateDocument : handleAddDocument}
+            onCancel={() => {
+              setShowForm(false);
+              setEditingDocument(null);
+            }}
+          />
+        </LoadingOverlay>
       )}
 
       {/* Lista de Documentos */}
@@ -193,99 +227,109 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
           const tenant = tenants.find(t => t.id === document.tenantId);
           
           return (
-            <div key={document.id} className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0">
-                    <FileText className="w-8 h-8 text-blue-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900">{document.type}</h3>
-                    <div className="flex items-center space-x-2 mt-1">
-                      {getStatusIcon(document.status)}
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(document.status)}`}>
-                        {document.status}
-                      </span>
-                      {document.contractSigned && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          Assinado
+            <AnimatedListItem
+              key={document.id}
+              isNew={newItemId === document.id}
+            >
+              <HighlightCard
+                isHighlighted={highlightedId === document.id}
+                className="bg-white rounded-lg shadow-md border border-gray-200 p-6 h-full"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0">
+                      <FileText className="w-8 h-8 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900">{document.type}</h3>
+                      <div className="flex items-center space-x-2 mt-1">
+                        {getStatusIcon(document.status)}
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(document.status)}`}>
+                          {document.status}
                         </span>
-                      )}
+                        {document.contractSigned && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Assinado
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => handleEditDocument(document)}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => onDeleteDocument(document.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                  <div className="flex items-center text-gray-600">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    <span>Emissão: {formatDate(document.issueDate)}</span>
-                  </div>
                   
-                  {document.hasValidity && document.validityDate && (
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handleEditDocument(document)}
+                      disabled={loading}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => onDeleteDocument(document.id)}
+                      disabled={loading}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                     <div className="flex items-center text-gray-600">
                       <Calendar className="w-4 h-4 mr-2" />
-                      <span>Validade: {formatDate(document.validityDate)}</span>
+                      <span>Emissão: {formatDate(document.issueDate)}</span>
                     </div>
-                  )}
-                  
-                  {!document.hasValidity && (
+                    
+                    {document.hasValidity && document.validityDate && (
+                      <div className="flex items-center text-gray-600">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        <span>Validade: {formatDate(document.validityDate)}</span>
+                      </div>
+                    )}
+                    
+                    {!document.hasValidity && (
+                      <div className="flex items-center text-gray-600">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        <span>Sem validade</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2 text-sm">
                     <div className="flex items-center text-gray-600">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      <span>Sem validade</span>
+                      <Home className="w-4 h-4 mr-2" />
+                      <span>Propriedade: {property?.name || 'Não encontrada'}</span>
+                    </div>
+                    
+                    {tenant && (
+                      <div className="flex items-center text-gray-600">
+                        <User className="w-4 h-4 mr-2" />
+                        <span>Inquilino: {tenant.name}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {document.fileName && (
+                    <div className="text-sm text-gray-600">
+                      <span className="font-medium">Arquivo:</span> {document.fileName}
                     </div>
                   )}
-                </div>
 
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center text-gray-600">
-                    <Home className="w-4 h-4 mr-2" />
-                    <span>Propriedade: {property?.name || 'Não encontrada'}</span>
-                  </div>
-                  
-                  {tenant && (
-                    <div className="flex items-center text-gray-600">
-                      <User className="w-4 h-4 mr-2" />
-                      <span>Inquilino: {tenant.name}</span>
+                  {document.observations && (
+                    <div className="text-sm text-gray-600">
+                      <span className="font-medium">Observações:</span>
+                      <p className="mt-1 text-gray-700">{document.observations}</p>
                     </div>
                   )}
-                </div>
 
-                {document.fileName && (
-                  <div className="text-sm text-gray-600">
-                    <span className="font-medium">Arquivo:</span> {document.fileName}
+                  <div className="text-xs text-gray-500 pt-2 border-t border-gray-100">
+                    Última atualização: {formatDate(document.lastUpdated)}
                   </div>
-                )}
-
-                {document.observations && (
-                  <div className="text-sm text-gray-600">
-                    <span className="font-medium">Observações:</span>
-                    <p className="mt-1 text-gray-700">{document.observations}</p>
-                  </div>
-                )}
-
-                <div className="text-xs text-gray-500 pt-2 border-t border-gray-100">
-                  Última atualização: {formatDate(document.lastUpdated)}
                 </div>
-              </div>
-            </div>
+              </HighlightCard>
+            </AnimatedListItem>
           );
         })}
       </div>
