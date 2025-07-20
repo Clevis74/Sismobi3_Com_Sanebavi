@@ -12,7 +12,6 @@ import {
   DEFAULT_ENERGY_GROUPS
 } from '../../utils/energyCalculations';
 import { formatCurrencyWithVisibility, formatDate, createLocalDate, formatCurrency } from '../../utils/calculations';
-import { formatCurrency } from '../../utils/calculations';
 
 interface EnergyCalculatorProps {
   energyBills: EnergyBill[];
