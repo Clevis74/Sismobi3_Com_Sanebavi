@@ -9,7 +9,8 @@ import {
   Settings,
   Zap,
   FileText,
-  Droplets
+  Droplets,
+  Info
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -27,6 +28,7 @@ const menuItems = [
   { id: 'energy', label: 'Energia (CPFL)', icon: Zap },
   { id: 'sanebavi', label: 'Água (Sanebavi)', icon: Droplets },
   { id: 'documents', label: 'Documentos', icon: FileText },
+  { id: 'informors', label: 'Informors', icon: Info },
   { id: 'settings', label: 'Configurações', icon: Settings },
 ];
 

@@ -13,6 +13,7 @@ import { ReportManager } from './components/Reports/ReportManager';
 import { DocumentManager } from './components/Documents/DocumentManager';
 import { EnergyCalculator } from './components/Energy/EnergyCalculator';
 import { SanebaviManager } from './components/Sanebavi/SanebaviManager';
+import { InformorsManager } from './components/Informors/InformorsManager';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { calculateFinancialSummary } from './utils/calculations';
 import { generateAutomaticAlerts, processRecurringTransactions } from './utils/alerts';
@@ -379,6 +380,8 @@ function App() {
             onDeleteWaterBill={deleteWaterBill}
           />
         );
+      case 'informors':
+        return <InformorsManager />;
       default:
         return <Dashboard summary={summary} properties={properties} transactions={transactions} showFinancialValues={showFinancialValues} />;
     }
