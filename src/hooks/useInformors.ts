@@ -1,105 +1,164 @@
-import { useState, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'react-toastify'
 import { Informor } from '../types/informor'
 import { informorSchema } from '../schemas/informorSchema'
-import { toast } from 'react-toastify'
+import { 
+  fetchInformors, 
+  salvarInformor as salvarInformorsService, 
+  excluirInformor as excluirInformorsService,
+  atualizarInformor as atualizarInformorsService
+} from '../services/informorsService'
+
+// Chaves para o cache do React Query
+const QUERY_KEYS = {
+  informors: ['informors'] as const,
+}
 
 export function useInformors() {
-  const [informors, setInformors] = useState<Informor[]>([])
-  const [carregando, setCarregando] = useState(false)
+  const queryClient = useQueryClient()
 
-  useEffect(() => {
-    // Simulando carregamento inicial dos Informors
-    const dadosMock = [
-      { id: '1', nome: 'Aluguel', valor: 1200, vencimento: '2025-07-10' },
-      { id: '2', nome: 'Luz', valor: 250, vencimento: '2025-07-15' }
-    ]
-    setInformors(dadosMock)
-  }, [])
+  // Query para buscar todos os Informors
+  const {
+    data: informors = [],
+    isLoading: carregando,
+    error,
+    refetch
+  } = useQuery({
+    queryKey: QUERY_KEYS.informors,
+    queryFn: fetchInformors,
+    onError: (error: Error) => {
+      console.error('Erro ao carregar Informors:', error)
+      toast.error(`Erro ao carregar dados: ${error.message}`)
+    }
+  })
 
-  const salvarInformor = async (novo: Informor): Promise<boolean> => {
-    setCarregando(true)
-    
-    try {
-      // Simular operação assíncrona (ex: chamada para API)
-      await new Promise(resolve => setTimeout(resolve, 800))
+  // Mutation para salvar novo Informor
+  const salvarMutation = useMutation({
+    mutationFn: salvarInformorsService,
+    onSuccess: (novoInformor) => {
+      // Atualiza o cache local imediatamente
+      queryClient.setQueryData(QUERY_KEYS.informors, (old: Informor[] = []) => [
+        ...old,
+        novoInformor
+      ])
       
-      // Validar os dados antes de salvar
-      const resultado = informorSchema.safeParse(novo)
+      // Opcional: revalida os dados do servidor
+      // queryClient.invalidateQueries(QUERY_KEYS.informors)
+      
+      toast.success(`Informor "${novoInformor.nome}" salvo com sucesso!`)
+    },
+    onError: (error: Error) => {
+      console.error('Erro ao salvar Informor:', error)
+      toast.error(`Erro ao salvar: ${error.message}`)
+    }
+  })
+
+  // Mutation para excluir Informor
+  const excluirMutation = useMutation({
+    mutationFn: excluirInformorsService,
+    onSuccess: (_, idExcluido) => {
+      // Atualiza o cache local imediatamente
+      queryClient.setQueryData(QUERY_KEYS.informors, (old: Informor[] = []) =>
+        old.filter(inf => inf.id !== idExcluido)
+      )
+      
+      const informorExcluido = informors.find(inf => inf.id === idExcluido)
+      toast.success(`Informor "${informorExcluido?.nome || 'desconhecido'}" excluído com sucesso!`)
+    },
+    onError: (error: Error) => {
+      console.error('Erro ao excluir Informor:', error)
+      toast.error(`Erro ao excluir: ${error.message}`)
+    }
+  })
+
+  // Mutation para atualizar Informor
+  const atualizarMutation = useMutation({
+    mutationFn: ({ id, dados }: { id: string; dados: Partial<Omit<Informor, 'id'>> }) =>
+      atualizarInformorsService(id, dados),
+    onSuccess: (informorAtualizado) => {
+      // Atualiza o cache local imediatamente
+      queryClient.setQueryData(QUERY_KEYS.informors, (old: Informor[] = []) =>
+        old.map(inf => inf.id === informorAtualizado.id ? informorAtualizado : inf)
+      )
+      
+      toast.success(`Informor "${informorAtualizado.nome}" atualizado com sucesso!`)
+    },
+    onError: (error: Error) => {
+      console.error('Erro ao atualizar Informor:', error)
+      toast.error(`Erro ao atualizar: ${error.message}`)
+    }
+  })
+
+  // Função para salvar novo Informor com validação
+  const salvarInformor = async (novo: Omit<Informor, 'id'>): Promise<boolean> => {
+    try {
+      // Validar os dados antes de enviar
+      const resultado = informorSchema.safeParse({ ...novo, id: 'temp' })
       
       if (!resultado.success) {
         console.error('Erro de validação:', resultado.error.format())
         toast.error('Dados inválidos! Verifique os campos preenchidos.')
-        return false // Indica que a validação falhou
-      } else {
-        const dadosValidados = resultado.data
-        // Gerar ID se não fornecido
-        const informorComId = {
-          ...dadosValidados,
-          id: dadosValidados.id || Date.now().toString()
-        }
-        
-        setInformors((prev) => [...prev, informorComId])
-        toast.success(`Informor "${informorComId.nome}" salvo com sucesso!`)
-        return true // Indica que foi salvo com sucesso
-      }
-    } catch (error) {
-      console.error('Erro ao salvar informor:', error)
-      toast.error('Erro inesperado ao salvar informor. Tente novamente.')
-      return false
-    } finally {
-      setCarregando(false)
-    }
-  }
-
-  const excluirInformor = async (id: string): Promise<boolean> => {
-    setCarregando(true)
-    
-    try {
-      // Simular operação assíncrona
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      const informorExistente = informors.find(inf => inf.id === id)
-      if (!informorExistente) {
-        toast.error('Informor não encontrado!')
         return false
       }
-      
-      setInformors((prev) => prev.filter(inf => inf.id !== id))
-      toast.success(`Informor "${informorExistente.nome}" excluído com sucesso!`)
+
+      // Executar a mutation
+      await salvarMutation.mutateAsync(novo)
       return true
     } catch (error) {
-      console.error('Erro ao excluir informor:', error)
-      toast.error('Erro ao excluir informor. Tente novamente.')
+      // Erro já tratado na mutation
       return false
-    } finally {
-      setCarregando(false)
     }
   }
 
-  const salvarInformor2 = async (novo: Informor): Promise<boolean> => {
-    // Validar os dados antes de salvar
-    const resultado = informorSchema.safeParse(novo)
+  // Função para excluir Informor
+  const excluirInformor = async (id: string): Promise<boolean> => {
+    try {
+      await excluirMutation.mutateAsync(id)
+      return true
+    } catch (error) {
+      // Erro já tratado na mutation
+      return false
+    }
+  }
+
+  // Função para atualizar Informor
+  const atualizarInformor = async (id: string, dados: Partial<Omit<Informor, 'id'>>): Promise<boolean> => {
+    try {
+      await atualizarMutation.mutateAsync({ id, dados })
+      return true
+    } catch (error) {
+      // Erro já tratado na mutation
+      return false
+    }
+  }
+
+  // Função para recarregar dados manualmente
+  const recarregarDados = () => {
+    refetch()
+  }
+
+  return {
+    // Dados
+    informors,
     
-    if (!resultado.success) {
-      console.error('Erro de validação:', resultado.error.format())
-      // Aqui você pode exibir mensagens no toast, console ou tooltip!
-      return false // Indica que a validação falhou
-    } else {
-      const dadosValidados = resultado.data
-      // Gerar ID se não fornecido
-      const informorComId = {
-        ...dadosValidados,
-        id: dadosValidados.id || Date.now().toString()
-      }
-      setInformors((prev) => [...prev, informorComId])
-      return true // Indica que foi salvo com sucesso
-    }
-  }
-
-  return { 
-    informors, 
-    salvarInformor, 
+    // Estados de loading
+    carregando: carregando || salvarMutation.isLoading || excluirMutation.isLoading || atualizarMutation.isLoading,
+    carregandoBusca: carregando,
+    carregandoSalvar: salvarMutation.isLoading,
+    carregandoExcluir: excluirMutation.isLoading,
+    carregandoAtualizar: atualizarMutation.isLoading,
+    
+    // Estados de erro
+    erro: error,
+    
+    // Funções
+    salvarInformor,
     excluirInformor,
-    carregando 
+    atualizarInformor,
+    recarregarDados,
+    
+    // Informações adicionais
+    temDados: informors.length > 0,
+    totalInformors: informors.length
   }
 }

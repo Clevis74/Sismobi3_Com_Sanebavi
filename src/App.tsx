@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Sidebar } from './components/Layout/Sidebar';
@@ -17,6 +18,21 @@ import { calculateFinancialSummary } from './utils/calculations';
 import { generateAutomaticAlerts, processRecurringTransactions } from './utils/alerts';
 import { createBackup, exportBackup, importBackup, validateBackup, BackupData } from './utils/dataBackup';
 import { Property, Tenant, Transaction, Alert, Document, EnergyBill, WaterBill } from './types';
+
+// Configuração do cliente do TanStack Query
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutos
+      cacheTime: 10 * 60 * 1000, // 10 minutos
+      retry: 2,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -369,59 +385,61 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex">
-      {/* Sidebar */}
-      <div className={`${isMobileMenuOpen ? 'block' : 'hidden'} lg:block fixed lg:relative z-30 w-64 h-full`}>
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+    <QueryClientProvider client={queryClient}>
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex">
+        {/* Sidebar */}
+        <div className={`${isMobileMenuOpen ? 'block' : 'hidden'} lg:block fixed lg:relative z-30 w-64 h-full`}>
+          <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        </div>
+
+        {/* Mobile overlay */}
+        {isMobileMenuOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        )}
+
+        {/* Main content */}
+        <div className="flex-1 flex flex-col">
+          <Header 
+            showFinancialValues={showFinancialValues}
+            onToggleFinancialValues={handleToggleFinancialValues}
+            onToggleTheme={handleToggleTheme}
+            onExport={handleExport} 
+            onImport={handleImport} 
+          />
+          
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="lg:hidden fixed top-4 left-4 z-40 p-2 bg-white rounded-lg shadow-md"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
+          <main className="flex-1 p-6 overflow-y-auto">
+            {renderContent()}
+          </main>
+          
+          {/* Toast Container para mensagens de feedback */}
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme={theme === 'dark' ? 'dark' : 'light'}
+          />
+        </div>
       </div>
-
-      {/* Mobile overlay */}
-      {isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col">
-        <Header 
-          showFinancialValues={showFinancialValues}
-          onToggleFinancialValues={handleToggleFinancialValues}
-          onToggleTheme={handleToggleTheme}
-          onExport={handleExport} 
-          onImport={handleImport} 
-        />
-        
-        {/* Mobile menu button */}
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="lg:hidden fixed top-4 left-4 z-40 p-2 bg-white rounded-lg shadow-md"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-
-        <main className="flex-1 p-6 overflow-y-auto">
-          {renderContent()}
-        </main>
-        
-        {/* Toast Container para mensagens de feedback */}
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme={theme === 'dark' ? 'dark' : 'light'}
-        />
-      </div>
-    </div>
+    </QueryClientProvider>
   );
 }
 
