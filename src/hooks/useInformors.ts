@@ -75,6 +75,8 @@ export function useInformors() {
       setCarregando(false)
     }
   }
+
+  const salvarInformor2 = async (novo: Informor): Promise<boolean> => {
     // Validar os dados antes de salvar
     const resultado = informorSchema.safeParse(novo)
     
