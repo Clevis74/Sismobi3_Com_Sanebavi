@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Download, Calendar, TrendingUp, PieChart, BarChart3 } from 'lucide-react';
 import { Property, Transaction, FinancialSummary } from '../../types';
 import { formatCurrencyWithVisibility, formatDate } from '../../utils/calculations';
+import { useActivation } from '../../contexts/ActivationContext';
 
 interface ReportManagerProps {
   properties: Property[];
@@ -16,10 +17,16 @@ export const ReportManager: React.FC<ReportManagerProps> = ({
   summary,
   showFinancialValues
 }) => {
+  const { isDemoMode } = useActivation();
   const [selectedPeriod, setSelectedPeriod] = useState<'month' | 'quarter' | 'year'>('month');
   const [selectedProperty, setSelectedProperty] = useState<string>('all');
 
   const generateReport = () => {
+    if (isDemoMode) {
+      alert('Exportação de relatórios desabilitada no modo DEMO. Ative o sistema para acessar esta funcionalidade.');
+      return;
+    }
+
     const reportData = {
       period: selectedPeriod,
       property: selectedProperty,
@@ -93,15 +100,42 @@ export const ReportManager: React.FC<ReportManagerProps> = ({
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
-        <h2 className="text-2xl font-bold text-gray-900">Relatórios Financeiros</h2>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Relatórios Financeiros</h2>
+          {isDemoMode && (
+            <p className="text-sm text-orange-600 mt-1">
+              Modo DEMO: Exportação de relatórios desabilitada
+            </p>
+          )}
+        </div>
         <button
           onClick={generateReport}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+          disabled={isDemoMode}
+          className={`px-4 py-2 rounded-lg transition-colors flex items-center ${
+            isDemoMode
+              ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+          }`}
+          title={isDemoMode ? 'Exportação desabilitada no modo DEMO' : 'Exportar relatório'}
         >
           <Download className="w-4 h-4 mr-2" />
-          Exportar Relatório
+          {isDemoMode ? 'Exportar (DEMO)' : 'Exportar Relatório'}
         </button>
       </div>
+
+      {/* Aviso do modo DEMO */}
+      {isDemoMode && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+            <h3 className="text-orange-800 font-medium">Modo DEMO Ativo</h3>
+          </div>
+          <p className="text-orange-700 text-sm mt-1">
+            A exportação de relatórios está desabilitada no modo DEMO. 
+            Ative o sistema na aba "Ativação" para acessar esta funcionalidade.
+          </p>
+        </div>
+      )}
 
       {/* Filtros */}
       <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">

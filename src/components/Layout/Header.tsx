@@ -1,5 +1,6 @@
 import React from 'react';
 import { Calendar, Download, Upload, Eye, EyeOff } from 'lucide-react';
+import { useActivation } from '../../contexts/ActivationContext';
 
 interface HeaderProps {
   showFinancialValues: boolean;
@@ -16,6 +17,8 @@ export const Header: React.FC<HeaderProps> = ({
   onExport, 
   onImport 
 }) => {
+  const { isDemoMode } = useActivation();
+
   const currentDate = new Date().toLocaleDateString('pt-BR', {
     weekday: 'long',
     year: 'numeric',
@@ -67,11 +70,22 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
           <button
             onClick={onExport}
-            className="flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors"
+            disabled={isDemoMode}
+            className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+              isDemoMode
+                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                : 'bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-800'
+            }`}
+            title={isDemoMode ? 'Exportação desabilitada no modo DEMO' : 'Exportar dados'}
           >
             <Download className="w-4 h-4 mr-2" />
-            Exportar
+            {isDemoMode ? 'Exportar (DEMO)' : 'Exportar'}
           </button>
+          {isDemoMode && (
+            <div className="absolute top-full right-0 mt-1 bg-red-100 border border-red-200 rounded-lg p-2 text-xs text-red-700 whitespace-nowrap">
+              Exportação desabilitada no modo DEMO
+            </div>
+          )}
         </div>
       </div>
     </header>
