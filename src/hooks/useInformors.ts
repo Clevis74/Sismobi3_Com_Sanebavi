@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Informor } from '../types'
+import { informorSchema } from '../schemas/informorSchema'
 
 export function useInformors() {
   const [informors, setInformors] = useState<Informor[]>([])
@@ -14,7 +15,23 @@ export function useInformors() {
   }, [])
 
   const salvarInformor = (novo: Informor) => {
-    setInformors((prev) => [...prev, novo])
+    // Validar os dados antes de salvar
+    const resultado = informorSchema.safeParse(novo)
+    
+    if (!resultado.success) {
+      console.error('Erro de validação:', resultado.error.format())
+      // Aqui você pode exibir mensagens no toast, console ou tooltip!
+      return false // Indica que a validação falhou
+    } else {
+      const dadosValidados = resultado.data
+      // Gerar ID se não fornecido
+      const informorComId = {
+        ...dadosValidados,
+        id: dadosValidados.id || Date.now().toString()
+      }
+      setInformors((prev) => [...prev, informorComId])
+      return true // Indica que foi salvo com sucesso
+    }
   }
 
   return { informors, salvarInformor }
