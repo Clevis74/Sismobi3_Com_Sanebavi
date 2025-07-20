@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { Informor } from '../types/informor'
 
 export const informorSchema = z.object({
   id: z.string().optional(), // Ajustado para aceitar qualquer string, não apenas UUID

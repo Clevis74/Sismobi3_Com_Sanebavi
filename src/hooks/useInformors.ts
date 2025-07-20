@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Informor } from '../types'
+import { Informor } from '../types/informor'
 import { informorSchema } from '../schemas/informorSchema'
 
 export function useInformors() {
