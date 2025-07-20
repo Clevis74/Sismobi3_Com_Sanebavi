@@ -14,6 +14,7 @@ import {
 import { formatCurrencyWithVisibility, formatDate, createLocalDate, formatCurrency } from '../../utils/calculations';
 import { useActivation } from '../../contexts/ActivationContext';
 import { LoadingButton } from '../UI/LoadingSpinner';
+import { HighlightCard, AnimatedListItem } from '../UI/HighlightCard';
 
 interface EnergyCalculatorProps {
   energyBills: EnergyBill[];
@@ -38,6 +39,8 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
   const [editingBill, setEditingBill] = useState<EnergyBill | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<string>(DEFAULT_ENERGY_GROUPS[0].id);
   const [loading, setLoading] = useState(false);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [newItemId, setNewItemId] = useState<string | null>(null);
   
   // Configurações do modo DEMO
   const DEMO_LIMITS = {
@@ -243,10 +246,23 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
 
     // Simular operação assíncrona
     setTimeout(() => {
+      const newBill = {
+        id: Date.now().toString(),
+        ...billData
+      };
+      
       if (editingBill) {
         onUpdateEnergyBill(editingBill.id, billData);
+        // Destacar o item editado
+        setHighlightedId(editingBill.id);
+        setTimeout(() => setHighlightedId(null), 3000);
       } else {
         onAddEnergyBill(billData);
+        // Destacar o novo item
+        setHighlightedId(newBill.id);
+        setNewItemId(newBill.id);
+        setTimeout(() => setHighlightedId(null), 3000);
+        setTimeout(() => setNewItemId(null), 1000);
       }
 
       // Reset form

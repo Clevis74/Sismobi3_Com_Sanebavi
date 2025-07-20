@@ -6,8 +6,10 @@ import { LoadingSpinner, LoadingButton, LoadingOverlay } from '../UI/LoadingSpin
 import { HighlightCard, AnimatedListItem } from '../UI/HighlightCard';
 import { formatCurrency } from '../../utils/calculations';
 import { Informor } from '../../types/informor';
+import { useActivation } from '../../contexts/ActivationContext';
 
 export const InformorsManager: React.FC = () => {
+  const { isDemoMode } = useActivation();
   const {
     informors,
     carregando,
@@ -26,6 +28,13 @@ export const InformorsManager: React.FC = () => {
   const [editingInformor, setEditingInformor] = useState<Informor | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [newItemId, setNewItemId] = useState<string | null>(null);
+
+  // Configurações do modo DEMO
+  const DEMO_LIMITS = {
+    maxInformors: 10
+  };
+
+  const isAtDemoLimit = isDemoMode && informors.length >= DEMO_LIMITS.maxInformors;
 
   // Limpar destaque após um tempo
   useEffect(() => {
@@ -48,6 +57,10 @@ export const InformorsManager: React.FC = () => {
   }, [newItemId]);
 
   const handleSalvar = async (dados: Omit<Informor, 'id'>) => {
+    if (isAtDemoLimit) {
+      return; // Não permite adicionar se estiver no limite do demo
+    }
+    
     const sucesso = await salvarInformor(dados);
     if (sucesso) {
       setShowForm(false);
@@ -140,19 +153,25 @@ export const InformorsManager: React.FC = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Gestão de Informors</h2>
-          <p className="text-gray-600 mt-1">
-            {carregandoBusca ? (
-              <span className="flex items-center space-x-2">
-                <LoadingSpinner size="sm" />
-                <span>Carregando informors...</span>
-              </span>
-            ) : (
-              `${informors.length} informor${informors.length !== 1 ? 's' : ''} cadastrado${informors.length !== 1 ? 's' : ''}`
-            )}
-          </p>
+          {isDemoMode ? (
+            <p className="text-sm text-orange-600 mt-1">
+              Modo DEMO: {informors.length}/{DEMO_LIMITS.maxInformors} informors utilizados
+            </p>
+          ) : (
+            <p className="text-gray-600 mt-1">
+              {carregandoBusca ? (
+                <span className="flex items-center space-x-2">
+                  <LoadingSpinner size="sm" />
+                  <span>Carregando informors...</span>
+                </span>
+              ) : (
+                `${informors.length} informor${informors.length !== 1 ? 's' : ''} cadastrado${informors.length !== 1 ? 's' : ''}`
+              )}
+            </p>
+          )}
         </div>
         
-        <div className="flex space-x-3">
+        <div className="flex flex-col items-end space-y-2">
           <LoadingButton
             loading={carregandoBusca}
             onClick={recarregarDados}
@@ -163,13 +182,36 @@ export const InformorsManager: React.FC = () => {
           <LoadingButton
             loading={false}
             onClick={() => setShowForm(true)}
+            disabled={isAtDemoLimit}
+            variant={isAtDemoLimit ? 'secondary' : 'primary'}
+            title={isAtDemoLimit ? 'Limite do modo DEMO atingido' : 'Adicionar novo informor'}
             variant="primary"
           >
             <Plus className="w-4 h-4" />
             Novo Informor
           </LoadingButton>
+          {isAtDemoLimit && (
+            <p className="text-xs text-red-600 text-right max-w-xs">
+              Limite de {DEMO_LIMITS.maxInformors} informors atingido no modo DEMO. 
+              Ative o sistema para cadastros ilimitados.
+            </p>
+          )}
         </div>
       </div>
+
+      {/* Aviso do modo DEMO */}
+      {isDemoMode && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+            <h3 className="text-orange-800 font-medium">Modo DEMO Ativo</h3>
+          </div>
+          <p className="text-orange-700 text-sm mt-1">
+            Você pode cadastrar até {DEMO_LIMITS.maxInformors} informors. 
+            Para acesso ilimitado, ative o sistema na aba "Ativação".
+          </p>
+        </div>
+      )}
 
       {/* Formulário */}
       {showForm && (

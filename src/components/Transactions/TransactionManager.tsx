@@ -5,6 +5,7 @@ import { TransactionForm } from './TransactionForm';
 import { formatCurrencyWithVisibility, formatDate } from '../../utils/calculations';
 import { useActivation } from '../../contexts/ActivationContext';
 import { LoadingButton, LoadingOverlay } from '../UI/LoadingSpinner';
+import { HighlightCard, AnimatedListItem } from '../UI/HighlightCard';
 
 interface TransactionManagerProps {
   transactions: Transaction[];
@@ -29,6 +30,8 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [loading, setLoading] = useState(false);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [newItemId, setNewItemId] = useState<string | null>(null);
 
   // Configurações do modo DEMO
   const DEMO_LIMITS = {
@@ -45,9 +48,22 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
     
     // Simular operação assíncrona
     setTimeout(() => {
+      const newTransaction = {
+        ...transactionData,
+        id: Date.now().toString()
+      };
+      
       onAddTransaction(transactionData);
       setShowForm(false);
       setLoading(false);
+      
+      // Destacar o novo item
+      setHighlightedId(newTransaction.id);
+      setNewItemId(newTransaction.id);
+      
+      // Limpar destaque após 3 segundos
+      setTimeout(() => setHighlightedId(null), 3000);
+      setTimeout(() => setNewItemId(null), 1000);
     }, 800);
   };
 
@@ -66,6 +82,10 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
         setEditingTransaction(null);
         setShowForm(false);
         setLoading(false);
+        
+        // Destacar o item editado
+        setHighlightedId(editingTransaction.id);
+        setTimeout(() => setHighlightedId(null), 3000);
       }, 600);
     }
   };
