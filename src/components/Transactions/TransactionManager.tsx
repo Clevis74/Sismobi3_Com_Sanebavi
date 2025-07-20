@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2, Calendar, DollarSign, Tag, Filter } from 'lucide-re
 import { Transaction } from '../../types';
 import { TransactionForm } from './TransactionForm';
 import { formatCurrencyWithVisibility, formatDate } from '../../utils/calculations';
+import { useActivation } from '../../contexts/ActivationContext';
 
 interface TransactionManagerProps {
   transactions: Transaction[];
@@ -21,12 +22,23 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
   onUpdateTransaction,
   onDeleteTransaction
 }) => {
+  const { isDemoMode } = useActivation();
   const [showForm, setShowForm] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
+  // Configurações do modo DEMO
+  const DEMO_LIMITS = {
+    maxTransactions: 50
+  };
+
+  const isAtDemoLimit = isDemoMode && transactions.length >= DEMO_LIMITS.maxTransactions;
+
   const handleAddTransaction = (transactionData: Omit<Transaction, 'id'>) => {
+    if (isAtDemoLimit) {
+      return; // Não permite adicionar se estiver no limite do demo
+    }
     onAddTransaction(transactionData);
     setShowForm(false);
   };
@@ -63,15 +75,50 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
-        <h2 className="text-2xl font-bold text-gray-900">Gestão de Transações</h2>
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Nova Transação
-        </button>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Gestão de Transações</h2>
+          {isDemoMode && (
+            <p className="text-sm text-orange-600 mt-1">
+              Modo DEMO: {transactions.length}/{DEMO_LIMITS.maxTransactions} transações utilizadas
+            </p>
+          )}
+        </div>
+        <div className="flex flex-col items-end space-y-2">
+          <button
+            onClick={() => setShowForm(true)}
+            disabled={isAtDemoLimit}
+            className={`px-4 py-2 rounded-lg transition-colors flex items-center ${
+              isAtDemoLimit
+                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
+            title={isAtDemoLimit ? 'Limite do modo DEMO atingido' : 'Adicionar nova transação'}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Nova Transação
+          </button>
+          {isAtDemoLimit && (
+            <p className="text-xs text-red-600 text-right max-w-xs">
+              Limite de {DEMO_LIMITS.maxTransactions} transações atingido no modo DEMO. 
+              Ative o sistema para cadastros ilimitados.
+            </p>
+          )}
+        </div>
       </div>
+
+      {/* Aviso do modo DEMO */}
+      {isDemoMode && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+            <h3 className="text-orange-800 font-medium">Modo DEMO Ativo</h3>
+          </div>
+          <p className="text-orange-700 text-sm mt-1">
+            Você pode cadastrar até {DEMO_LIMITS.maxTransactions} transações. 
+            Para acesso ilimitado, ative o sistema na aba "Ativação".
+          </p>
+        </div>
+      )}
 
       {/* Filtros */}
       <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">

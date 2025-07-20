@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2, FileText, Calendar, User, Home, AlertCircle, CheckC
 import { Document, Property, Tenant } from '../../types';
 import { DocumentForm } from './DocumentForm';
 import { formatDate } from '../../utils/calculations';
+import { useActivation } from '../../contexts/ActivationContext';
 
 interface DocumentManagerProps {
   documents: Document[];
@@ -21,12 +22,23 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
   onUpdateDocument,
   onDeleteDocument
 }) => {
+  const { isDemoMode } = useActivation();
   const [showForm, setShowForm] = useState(false);
   const [editingDocument, setEditingDocument] = useState<Document | null>(null);
   const [filter, setFilter] = useState<'all' | 'valid' | 'expired' | 'pending'>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
 
+  // Configurações do modo DEMO
+  const DEMO_LIMITS = {
+    maxDocuments: 15
+  };
+
+  const isAtDemoLimit = isDemoMode && documents.length >= DEMO_LIMITS.maxDocuments;
+
   const handleAddDocument = (documentData: Omit<Document, 'id' | 'lastUpdated'>) => {
+    if (isAtDemoLimit) {
+      return; // Não permite adicionar se estiver no limite do demo
+    }
     onAddDocument(documentData);
     setShowForm(false);
   };
@@ -82,18 +94,52 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Gestão de Documentos</h2>
-          <p className="text-gray-600 mt-1">
-            {documents.length} documento{documents.length !== 1 ? 's' : ''} cadastrado{documents.length !== 1 ? 's' : ''}
+          {isDemoMode ? (
+            <p className="text-sm text-orange-600 mt-1">
+              Modo DEMO: {documents.length}/{DEMO_LIMITS.maxDocuments} documentos utilizados
+            </p>
+          ) : (
+            <p className="text-gray-600 mt-1">
+              {documents.length} documento{documents.length !== 1 ? 's' : ''} cadastrado{documents.length !== 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
+        <div className="flex flex-col items-end space-y-2">
+          <button
+            onClick={() => setShowForm(true)}
+            disabled={isAtDemoLimit}
+            className={`px-4 py-2 rounded-lg transition-colors flex items-center ${
+              isAtDemoLimit
+                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
+            title={isAtDemoLimit ? 'Limite do modo DEMO atingido' : 'Adicionar novo documento'}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Novo Documento
+          </button>
+          {isAtDemoLimit && (
+            <p className="text-xs text-red-600 text-right max-w-xs">
+              Limite de {DEMO_LIMITS.maxDocuments} documentos atingido no modo DEMO. 
+              Ative o sistema para cadastros ilimitados.
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Aviso do modo DEMO */}
+      {isDemoMode && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+            <h3 className="text-orange-800 font-medium">Modo DEMO Ativo</h3>
+          </div>
+          <p className="text-orange-700 text-sm mt-1">
+            Você pode cadastrar até {DEMO_LIMITS.maxDocuments} documentos. 
+            Para acesso ilimitado, ative o sistema na aba "Ativação".
           </p>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Documento
-        </button>
-      </div>
+      )}
 
       {/* Filtros */}
       <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">

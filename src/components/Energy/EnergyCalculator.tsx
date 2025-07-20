@@ -12,6 +12,7 @@ import {
   DEFAULT_ENERGY_GROUPS
 } from '../../utils/energyCalculations';
 import { formatCurrencyWithVisibility, formatDate, createLocalDate, formatCurrency } from '../../utils/calculations';
+import { useActivation } from '../../contexts/ActivationContext';
 
 interface EnergyCalculatorProps {
   energyBills: EnergyBill[];
@@ -30,11 +31,19 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
   onUpdateEnergyBill,
   onDeleteEnergyBill
 }) => {
+  const { isDemoMode } = useActivation();
   const [showForm, setShowForm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [editingBill, setEditingBill] = useState<EnergyBill | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<string>(DEFAULT_ENERGY_GROUPS[0].id);
   
+  // Configurações do modo DEMO
+  const DEMO_LIMITS = {
+    maxEnergyBills: 20
+  };
+
+  const isAtDemoLimit = isDemoMode && energyBills.length >= DEMO_LIMITS.maxEnergyBills;
+
   // Estados do formulário
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -210,6 +219,10 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (isAtDemoLimit && !editingBill) {
+      return; // Não permite adicionar se estiver no limite do demo
+    }
+    
     const selectedGroupData = DEFAULT_ENERGY_GROUPS.find(g => g.id === selectedGroup);
     if (!selectedGroupData) return;
     
@@ -303,9 +316,15 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Cálculo de Energia Compartilhada</h2>
-          <p className="text-gray-600 mt-1">
-            {energyBills.length} conta{energyBills.length !== 1 ? 's' : ''} registrada{energyBills.length !== 1 ? 's' : ''}
-          </p>
+          {isDemoMode ? (
+            <p className="text-sm text-orange-600 mt-1">
+              Modo DEMO: {energyBills.length}/{DEMO_LIMITS.maxEnergyBills} contas utilizadas
+            </p>
+          ) : (
+            <p className="text-gray-600 mt-1">
+              {energyBills.length} conta{energyBills.length !== 1 ? 's' : ''} registrada{energyBills.length !== 1 ? 's' : ''}
+            </p>
+          )}
         </div>
         
         <div className="flex space-x-3">
@@ -327,15 +346,42 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
             {showHistory ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
             {showHistory ? 'Ocultar' : 'Ver'} Histórico
           </button>
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Nova Conta
-          </button>
+          <div className="flex flex-col items-end space-y-2">
+            <button
+              onClick={() => setShowForm(true)}
+              disabled={isAtDemoLimit}
+              className={`px-4 py-2 rounded-lg transition-colors flex items-center ${
+                isAtDemoLimit
+                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+              title={isAtDemoLimit ? 'Limite do modo DEMO atingido' : 'Adicionar nova conta'}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Nova Conta
+            </button>
+            {isAtDemoLimit && (
+              <p className="text-xs text-red-600 text-right max-w-xs">
+                Limite de {DEMO_LIMITS.maxEnergyBills} contas atingido no modo DEMO.
+              </p>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Aviso do modo DEMO */}
+      {isDemoMode && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+            <h3 className="text-orange-800 font-medium">Modo DEMO Ativo</h3>
+          </div>
+          <p className="text-orange-700 text-sm mt-1">
+            Você pode registrar até {DEMO_LIMITS.maxEnergyBills} contas de energia. 
+            Para acesso ilimitado, ative o sistema na aba "Ativação".
+          </p>
+        </div>
+      )}
 
       {/* Estatísticas do Grupo Selecionado */}
       {selectedGroupBills.length > 0 && (

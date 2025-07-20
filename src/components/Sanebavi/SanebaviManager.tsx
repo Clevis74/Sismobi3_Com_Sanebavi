@@ -12,6 +12,7 @@ import {
   DEFAULT_WATER_GROUPS
 } from '../../utils/sanebaviCalculations';
 import { formatCurrencyWithVisibility, formatDate, createLocalDate } from '../../utils/calculations';
+import { useActivation } from '../../contexts/ActivationContext';
 
 interface SanebaviManagerProps {
   waterBills: WaterBill[];
@@ -30,11 +31,19 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
   onUpdateWaterBill,
   onDeleteWaterBill
 }) => {
+  const { isDemoMode } = useActivation();
   const [showForm, setShowForm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [editingBill, setEditingBill] = useState<WaterBill | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<string>(DEFAULT_WATER_GROUPS[0].id);
   
+  // Configurações do modo DEMO
+  const DEMO_LIMITS = {
+    maxWaterBills: 20
+  };
+
+  const isAtDemoLimit = isDemoMode && waterBills.length >= DEMO_LIMITS.maxWaterBills;
+
   // Estados do formulário
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -160,6 +169,10 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (isAtDemoLimit && !editingBill) {
+      return; // Não permite adicionar se estiver no limite do demo
+    }
+    
     const selectedGroupData = DEFAULT_WATER_GROUPS.find(g => g.id === selectedGroup);
     if (!selectedGroupData) return;
     
@@ -219,6 +232,10 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
   };
 
   const handleExportCSV = () => {
+    if (isDemoMode) {
+      alert('Exportação desabilitada no modo DEMO. Ative o sistema para acessar esta funcionalidade.');
+      return;
+    }
     exportWaterBillsToCSV(waterBills, selectedGroup);
   };
 
@@ -248,9 +265,15 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Sanebavi - Contas de Água</h2>
-          <p className="text-gray-600 mt-1">
-            {waterBills.length} conta{waterBills.length !== 1 ? 's' : ''} registrada{waterBills.length !== 1 ? 's' : ''}
-          </p>
+          {isDemoMode ? (
+            <p className="text-sm text-orange-600 mt-1">
+              Modo DEMO: {waterBills.length}/{DEMO_LIMITS.maxWaterBills} contas utilizadas
+            </p>
+          ) : (
+            <p className="text-gray-600 mt-1">
+              {waterBills.length} conta{waterBills.length !== 1 ? 's' : ''} registrada{waterBills.length !== 1 ? 's' : ''}
+            </p>
+          )}
         </div>
         
         <div className="flex space-x-3">
@@ -267,10 +290,12 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
           </select>
           <button
             onClick={handleExportCSV}
+            disabled={isDemoMode}
             className="flex items-center px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            title={isDemoMode ? 'Exportação desabilitada no modo DEMO' : 'Exportar dados para CSV'}
           >
             <Download className="w-4 h-4 mr-2" />
-            Exportar CSV
+            {isDemoMode ? 'Exportar (DEMO)' : 'Exportar CSV'}
           </button>
           <button
             onClick={() => setShowHistory(!showHistory)}
@@ -279,15 +304,42 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
             {showHistory ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
             {showHistory ? 'Ocultar' : 'Ver'} Histórico
           </button>
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Nova Conta
-          </button>
+          <div className="flex flex-col items-end space-y-2">
+            <button
+              onClick={() => setShowForm(true)}
+              disabled={isAtDemoLimit}
+              className={`px-4 py-2 rounded-lg transition-colors flex items-center ${
+                isAtDemoLimit
+                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+              title={isAtDemoLimit ? 'Limite do modo DEMO atingido' : 'Adicionar nova conta'}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Nova Conta
+            </button>
+            {isAtDemoLimit && (
+              <p className="text-xs text-red-600 text-right max-w-xs">
+                Limite de {DEMO_LIMITS.maxWaterBills} contas atingido no modo DEMO.
+              </p>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Aviso do modo DEMO */}
+      {isDemoMode && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+            <h3 className="text-orange-800 font-medium">Modo DEMO Ativo</h3>
+          </div>
+          <p className="text-orange-700 text-sm mt-1">
+            Você pode registrar até {DEMO_LIMITS.maxWaterBills} contas de água. 
+            Para acesso ilimitado, ative o sistema na aba "Ativação".
+          </p>
+        </div>
+      )}
 
       {/* Estatísticas do Grupo Selecionado */}
       {selectedGroupBills.length > 0 && (
