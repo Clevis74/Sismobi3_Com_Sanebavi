@@ -4,6 +4,8 @@ import { Property } from '../../types';
 import { PropertyForm } from './PropertyForm';
 import { formatCurrencyWithVisibility } from '../../utils/calculations';
 import { useActivation } from '../../contexts/ActivationContext';
+import { LoadingButton, LoadingOverlay } from '../UI/LoadingSpinner';
+import { HighlightCard, AnimatedListItem } from '../UI/HighlightCard';
 
 interface PropertyManagerProps {
   properties: Property[];
@@ -23,6 +25,9 @@ export const PropertyManager: React.FC<PropertyManagerProps> = ({
   const { isDemoMode } = useActivation();
   const [showForm, setShowForm] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [newItemId, setNewItemId] = useState<string | null>(null);
 
   // Configurações do modo DEMO
   const DEMO_LIMITS = {
@@ -35,8 +40,28 @@ export const PropertyManager: React.FC<PropertyManagerProps> = ({
     if (isAtDemoLimit) {
       return; // Não permite adicionar se estiver no limite do demo
     }
-    onAddProperty(propertyData);
-    setShowForm(false);
+    setLoading(true);
+    
+    // Simular operação assíncrona
+    setTimeout(() => {
+      const newProperty = {
+        ...propertyData,
+        id: Date.now().toString(),
+        createdAt: new Date()
+      };
+      
+      onAddProperty(propertyData);
+      setShowForm(false);
+      setLoading(false);
+      
+      // Destacar o novo item
+      setHighlightedId(newProperty.id);
+      setNewItemId(newProperty.id);
+      
+      // Limpar destaque após 3 segundos
+      setTimeout(() => setHighlightedId(null), 3000);
+      setTimeout(() => setNewItemId(null), 1000);
+    }, 800);
   };
 
   const handleEditProperty = (property: Property) => {
@@ -46,9 +71,19 @@ export const PropertyManager: React.FC<PropertyManagerProps> = ({
 
   const handleUpdateProperty = (propertyData: Omit<Property, 'id' | 'createdAt'>) => {
     if (editingProperty) {
-      onUpdateProperty(editingProperty.id, propertyData);
-      setEditingProperty(null);
-      setShowForm(false);
+      setLoading(true);
+      
+      // Simular operação assíncrona
+      setTimeout(() => {
+        onUpdateProperty(editingProperty.id, propertyData);
+        setEditingProperty(null);
+        setShowForm(false);
+        setLoading(false);
+        
+        // Destacar o item editado
+        setHighlightedId(editingProperty.id);
+        setTimeout(() => setHighlightedId(null), 3000);
+      }, 600);
     }
   };
 
@@ -82,19 +117,16 @@ export const PropertyManager: React.FC<PropertyManagerProps> = ({
           )}
         </div>
         <div className="flex flex-col items-end space-y-2">
-          <button
+          <LoadingButton
+            loading={loading}
             onClick={() => setShowForm(true)}
             disabled={isAtDemoLimit}
-            className={`px-4 py-2 rounded-lg transition-colors flex items-center ${
-              isAtDemoLimit
-                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
-            }`}
+            variant={isAtDemoLimit ? 'secondary' : 'primary'}
             title={isAtDemoLimit ? 'Limite do modo DEMO atingido' : 'Adicionar nova propriedade'}
           >
             <Plus className="w-4 h-4 mr-2" />
             Nova Propriedade
-          </button>
+          </LoadingButton>
           {isAtDemoLimit && (
             <p className="text-xs text-red-600 text-right max-w-xs">
               Limite de {DEMO_LIMITS.maxProperties} propriedades atingido no modo DEMO. 
@@ -119,62 +151,74 @@ export const PropertyManager: React.FC<PropertyManagerProps> = ({
       )}
 
       {showForm && (
-        <PropertyForm
-          property={editingProperty}
-          onSubmit={editingProperty ? handleUpdateProperty : handleAddProperty}
-          onCancel={() => {
-            setShowForm(false);
-            setEditingProperty(null);
-          }}
-        />
+        <LoadingOverlay loading={loading} message={editingProperty ? "Atualizando propriedade..." : "Criando propriedade..."}>
+          <PropertyForm
+            property={editingProperty}
+            onSubmit={editingProperty ? handleUpdateProperty : handleAddProperty}
+            onCancel={() => {
+              setShowForm(false);
+              setEditingProperty(null);
+            }}
+          />
+        </LoadingOverlay>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {properties.map((property) => (
-          <div key={property.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700">
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{property.name}</h3>
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(property.status)}`}>
-                  {getStatusText(property.status)}
-                </span>
-              </div>
-
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center text-gray-600 dark:text-gray-400">
-                  <MapPin className="w-4 h-4 mr-2" />
-                  <span className="text-sm">{property.address}</span>
+          <AnimatedListItem
+            key={property.id}
+            isNew={newItemId === property.id}
+          >
+            <HighlightCard
+              isHighlighted={highlightedId === property.id}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 h-full"
+            >
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{property.name}</h3>
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(property.status)}`}>
+                    {getStatusText(property.status)}
+                  </span>
                 </div>
-                <div className="flex items-center text-gray-600 dark:text-gray-400">
-                  <DollarSign className="w-4 h-4 mr-2" />
-                  <span className="text-sm font-medium">{formatCurrencyWithVisibility(property.rentValue, showFinancialValues)}/mês</span>
+
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center text-gray-600 dark:text-gray-400">
+                    <MapPin className="w-4 h-4 mr-2" />
+                    <span className="text-sm">{property.address}</span>
+                  </div>
+                  <div className="flex items-center text-gray-600 dark:text-gray-400">
+                    <DollarSign className="w-4 h-4 mr-2" />
+                    <span className="text-sm font-medium">{formatCurrencyWithVisibility(property.rentValue, showFinancialValues)}/mês</span>
+                  </div>
+                </div>
+
+                <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  <p>Tipo: {property.type === 'apartment' ? 'Apartamento' : property.type === 'house' ? 'Casa' : 'Comercial'}</p>
+                  <p>Valor de Compra: {formatCurrencyWithVisibility(property.purchasePrice, showFinancialValues)}</p>
+                  {property.tenant && (
+                    <p>Inquilino: {property.tenant.name}</p>
+                  )}
+                </div>
+
+                <div className="flex justify-end space-x-2">
+                  <button
+                    onClick={() => handleEditProperty(property)}
+                    disabled={loading}
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => onDeleteProperty(property.id)}
+                    disabled={loading}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
-
-              <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                <p>Tipo: {property.type === 'apartment' ? 'Apartamento' : property.type === 'house' ? 'Casa' : 'Comercial'}</p>
-                <p>Valor de Compra: {formatCurrencyWithVisibility(property.purchasePrice, showFinancialValues)}</p>
-                {property.tenant && (
-                  <p>Inquilino: {property.tenant.name}</p>
-                )}
-              </div>
-
-              <div className="flex justify-end space-x-2">
-                <button
-                  onClick={() => handleEditProperty(property)}
-                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                >
-                  <Edit className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => onDeleteProperty(property.id)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
+            </HighlightCard>
+          </AnimatedListItem>
         ))}
       </div>
 

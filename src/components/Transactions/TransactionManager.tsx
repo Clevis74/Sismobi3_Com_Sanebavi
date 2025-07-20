@@ -4,6 +4,7 @@ import { Transaction } from '../../types';
 import { TransactionForm } from './TransactionForm';
 import { formatCurrencyWithVisibility, formatDate } from '../../utils/calculations';
 import { useActivation } from '../../contexts/ActivationContext';
+import { LoadingButton, LoadingOverlay } from '../UI/LoadingSpinner';
 
 interface TransactionManagerProps {
   transactions: Transaction[];
@@ -27,6 +28,7 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [loading, setLoading] = useState(false);
 
   // Configurações do modo DEMO
   const DEMO_LIMITS = {
@@ -39,8 +41,14 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
     if (isAtDemoLimit) {
       return; // Não permite adicionar se estiver no limite do demo
     }
-    onAddTransaction(transactionData);
-    setShowForm(false);
+    setLoading(true);
+    
+    // Simular operação assíncrona
+    setTimeout(() => {
+      onAddTransaction(transactionData);
+      setShowForm(false);
+      setLoading(false);
+    }, 800);
   };
 
   const handleEditTransaction = (transaction: Transaction) => {
@@ -50,9 +58,15 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
 
   const handleUpdateTransaction = (transactionData: Omit<Transaction, 'id'>) => {
     if (editingTransaction) {
-      onUpdateTransaction(editingTransaction.id, transactionData);
-      setEditingTransaction(null);
-      setShowForm(false);
+      setLoading(true);
+      
+      // Simular operação assíncrona
+      setTimeout(() => {
+        onUpdateTransaction(editingTransaction.id, transactionData);
+        setEditingTransaction(null);
+        setShowForm(false);
+        setLoading(false);
+      }, 600);
     }
   };
 
@@ -84,19 +98,16 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
           )}
         </div>
         <div className="flex flex-col items-end space-y-2">
-          <button
+          <LoadingButton
+            loading={loading}
             onClick={() => setShowForm(true)}
             disabled={isAtDemoLimit}
-            className={`px-4 py-2 rounded-lg transition-colors flex items-center ${
-              isAtDemoLimit
-                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
-            }`}
+            variant={isAtDemoLimit ? 'secondary' : 'primary'}
             title={isAtDemoLimit ? 'Limite do modo DEMO atingido' : 'Adicionar nova transação'}
           >
             <Plus className="w-4 h-4 mr-2" />
             Nova Transação
-          </button>
+          </LoadingButton>
           {isAtDemoLimit && (
             <p className="text-xs text-red-600 text-right max-w-xs">
               Limite de {DEMO_LIMITS.maxTransactions} transações atingido no modo DEMO. 
@@ -152,19 +163,22 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
       </div>
 
       {showForm && (
-        <TransactionForm
-          transaction={editingTransaction}
-          properties={properties}
-          onSubmit={editingTransaction ? handleUpdateTransaction : handleAddTransaction}
-          onCancel={() => {
-            setShowForm(false);
-            setEditingTransaction(null);
-          }}
-        />
+        <LoadingOverlay loading={loading} message={editingTransaction ? "Atualizando transação..." : "Criando transação..."}>
+          <TransactionForm
+            transaction={editingTransaction}
+            properties={properties}
+            onSubmit={editingTransaction ? handleUpdateTransaction : handleAddTransaction}
+            onCancel={() => {
+              setShowForm(false);
+              setEditingTransaction(null);
+            }}
+          />
+        </LoadingOverlay>
       )}
 
       {/* Lista de Transações */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+      <LoadingOverlay loading={loading} message="Processando transação...">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-700">
@@ -232,13 +246,15 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
                       <div className="flex space-x-2">
                         <button
                           onClick={() => handleEditTransaction(transaction)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          disabled={loading}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => onDeleteTransaction(transaction.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          disabled={loading}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -250,7 +266,8 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
             </tbody>
           </table>
         </div>
-      </div>
+        </div>
+      </LoadingOverlay>
 
       {filteredTransactions.length === 0 && (
         <div className="text-center py-12">
