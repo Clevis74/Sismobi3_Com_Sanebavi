@@ -7,9 +7,23 @@ import { HighlightCard, AnimatedListItem } from '../UI/HighlightCard';
 import { formatCurrency } from '../../utils/calculations';
 import { Informor } from '../../types/informor';
 import { useActivation } from '../../contexts/ActivationContext';
+import { useConfirmationModal } from '../UI/ConfirmationModal';
+import { useEnhancedToast } from '../UI/EnhancedToast';
+import { testConnection } from '../../lib/supabaseClient';
 
 export const InformorsManager: React.FC = () => {
   const { isDemoMode } = useActivation();
+  const [supabaseAvailable, setSupabaseAvailable] = useState(false);
+  
+  // Verificar disponibilidade do Supabase
+  useEffect(() => {
+    const checkSupabase = async () => {
+      const isAvailable = await testConnection();
+      setSupabaseAvailable(isAvailable);
+    };
+    checkSupabase();
+  }, []);
+  
   const {
     informors,
     carregando,
@@ -22,12 +36,15 @@ export const InformorsManager: React.FC = () => {
     atualizarInformor,
     recarregarDados,
     erro
-  } = useInformors();
+  } = useInformors(supabaseAvailable);
 
   const [showForm, setShowForm] = useState(false);
   const [editingInformor, setEditingInformor] = useState<Informor | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [newItemId, setNewItemId] = useState<string | null>(null);
+
+  const { showConfirmation, ConfirmationModalComponent } = useConfirmationModal();
+  const toast = useEnhancedToast();
 
   // Configurações do modo DEMO
   const DEMO_LIMITS = {
@@ -58,6 +75,7 @@ export const InformorsManager: React.FC = () => {
 
   const handleSalvar = async (dados: Omit<Informor, 'id'>) => {
     if (isAtDemoLimit) {
+      toast.demoLimit('informors', DEMO_LIMITS.maxInformors);
       return; // Não permite adicionar se estiver no limite do demo
     }
     
@@ -89,9 +107,19 @@ export const InformorsManager: React.FC = () => {
   };
 
   const handleExcluir = async (id: string) => {
-    if (window.confirm('Tem certeza que deseja excluir este informor?')) {
-      await excluirInformor(id);
-    }
+    const informor = informors.find(i => i.id === id);
+    showConfirmation({
+      title: 'Excluir Informor',
+      message: `Tem certeza que deseja excluir "${informor?.nome}"? Esta ação não pode ser desfeita.`,
+      confirmText: 'Excluir',
+      type: 'danger',
+      onConfirm: async () => {
+        const success = await excluirInformor(id);
+        if (success) {
+          toast.deleted('Informor');
+        }
+      }
+    });
   };
 
   const handleEditar = (informor: Informor) => {
@@ -185,7 +213,6 @@ export const InformorsManager: React.FC = () => {
             disabled={isAtDemoLimit}
             variant={isAtDemoLimit ? 'secondary' : 'primary'}
             title={isAtDemoLimit ? 'Limite do modo DEMO atingido' : 'Adicionar novo informor'}
-            variant="primary"
           >
             <Plus className="w-4 h-4" />
             Novo Informor
@@ -309,6 +336,8 @@ export const InformorsManager: React.FC = () => {
           </LoadingButton>
         </div>
       )}
+      
+      {ConfirmationModalComponent}
     </div>
   );
 };
