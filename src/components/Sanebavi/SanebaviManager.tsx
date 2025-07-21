@@ -18,27 +18,33 @@ import { HighlightCard, AnimatedListItem } from '../UI/HighlightCard';
 
 interface SanebaviManagerProps {
   waterBills: WaterBill[];
+  loading?: boolean;
+  error?: Error | null;
   properties: any[]; // Lista de propriedades para vinculação
   showFinancialValues: boolean;
-  onAddWaterBill: (bill: Omit<WaterBill, 'id' | 'createdAt' | 'lastUpdated'>) => void;
-  onUpdateWaterBill: (id: string, bill: Partial<WaterBill>) => void;
-  onDeleteWaterBill: (id: string) => void;
+  onAddWaterBill: (bill: Omit<WaterBill, 'id' | 'createdAt' | 'lastUpdated'>) => Promise<boolean>;
+  onUpdateWaterBill: (id: string, bill: Partial<WaterBill>) => Promise<boolean>;
+  onDeleteWaterBill: (id: string) => Promise<boolean>;
+  onReload?: () => void;
 }
 
 export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
   waterBills,
+  loading: externalLoading = false,
+  error: externalError = null,
   properties,
   showFinancialValues,
   onAddWaterBill,
   onUpdateWaterBill,
-  onDeleteWaterBill
+  onDeleteWaterBill,
+  onReload
 }) => {
   const { isDemoMode } = useActivation();
   const [showForm, setShowForm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [editingBill, setEditingBill] = useState<WaterBill | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<string>(DEFAULT_WATER_GROUPS[0].id);
-  const [loading, setLoading] = useState(false);
+  const [internalLoading, setInternalLoading] = useState(false);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [newItemId, setNewItemId] = useState<string | null>(null);
   
@@ -48,6 +54,9 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
   };
 
   const isAtDemoLimit = isDemoMode && waterBills.length >= DEMO_LIMITS.maxWaterBills;
+  
+  // Combinar estados de loading
+  const loading = externalLoading || internalLoading;
 
   // Estados do formulário
   const [formData, setFormData] = useState({
@@ -171,17 +180,21 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (isAtDemoLimit && !editingBill) {
+      toast.demoLimit('contas de água', DEMO_LIMITS.maxWaterBills);
       return; // Não permite adicionar se estiver no limite do demo
     }
     
-    setLoading(true);
+    setInternalLoading(true);
     
     const selectedGroupData = DEFAULT_WATER_GROUPS.find(g => g.id === selectedGroup);
-    if (!selectedGroupData) return;
+    if (!selectedGroupData) {
+      setInternalLoading(false);
+      return;
+    }
     
     const billData: Omit<WaterBill, 'id' | 'createdAt' | 'lastUpdated'> = {
       date: createLocalDate(formData.date),
@@ -193,33 +206,42 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
       propertiesInGroup: propertiesInGroup
     };
 
-    // Simular operação assíncrona
-    setTimeout(() => {
-      const newBill = {
-        id: Date.now().toString(),
-        ...billData
-      };
-      
+    try {
+      let success = false;
       if (editingBill) {
-        onUpdateWaterBill(editingBill.id, billData);
-        // Destacar o item editado
-        setHighlightedId(editingBill.id);
-        setTimeout(() => setHighlightedId(null), 3000);
+        success = await onUpdateWaterBill(editingBill.id, billData);
+        if (success) {
+          // Destacar o item editado
+          setHighlightedId(editingBill.id);
+          setTimeout(() => setHighlightedId(null), 3000);
+        }
       } else {
-        onAddWaterBill(billData);
-        // Destacar o novo item
-        setHighlightedId(newBill.id);
-        setNewItemId(newBill.id);
-        setTimeout(() => setHighlightedId(null), 3000);
-        setTimeout(() => setNewItemId(null), 1000);
+        success = await onAddWaterBill(billData);
+        if (success) {
+          // Destacar o novo item (será o primeiro da lista após a criação)
+          setTimeout(() => {
+            const newestBill = waterBills[0];
+            if (newestBill) {
+              setHighlightedId(newestBill.id);
+              setNewItemId(newestBill.id);
+              
+              // Limpar destaque após 3 segundos
+              setTimeout(() => setHighlightedId(null), 3000);
+              setTimeout(() => setNewItemId(null), 1000);
+            }
+          }, 100);
+        }
       }
-
-      // Reset form
-      setShowForm(false);
-      setEditingBill(null);
-      resetForm();
-      setLoading(false);
-    }, 800);
+      
+      if (success) {
+        // Reset form
+        setShowForm(false);
+        setEditingBill(null);
+        resetForm();
+      }
+    } finally {
+      setInternalLoading(false);
+    }
   };
 
   const resetForm = () => {
@@ -736,16 +758,19 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                         <button
                           onClick={() => handleEditBill(bill)}
+                          disabled={loading}
                           className="text-blue-600 hover:text-blue-900"
                         >
                           Editar
                         </button>
-                        <button
-                          onClick={() => onDeleteWaterBill(bill.id)}
-                          className="text-red-600 hover:text-red-900"
+                        <LoadingButton
+                          loading={loading}
+                          onClick={() => handleDeleteBill(bill)}
+                          variant="danger"
+                          className="text-red-600 hover:text-red-900 text-sm"
                         >
                           Excluir
-                        </button>
+                        </LoadingButton>
                       </td>
                     </tr>
                   );
@@ -758,6 +783,14 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Estado vazio */}
+      {!loading && waterBills.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-gray-500 text-lg">Nenhuma conta de água cadastrada</p>
+          <p className="text-gray-400 mt-2">Comece adicionando sua primeira conta</p>
         </div>
       )}
     </div>
