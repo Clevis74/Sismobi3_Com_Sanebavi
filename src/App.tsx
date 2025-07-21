@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import { ActivationProvider } from './contexts/ActivationContext';
+import { ActivationProvider, useActivation } from './contexts/ActivationContext';
 import { Header } from './components/Layout/Header';
 import { Sidebar } from './components/Layout/Sidebar';
 import { SyncIndicator } from './components/Layout/SyncIndicator';
