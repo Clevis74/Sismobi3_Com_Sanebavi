@@ -38,7 +38,7 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
   onAddEnergyBill,
   onUpdateEnergyBill,
   onDeleteEnergyBill
-  onReload
+ onReload
 }) => {
   const { isDemoMode } = useActivation();
   const toast = useEnhancedToast();
