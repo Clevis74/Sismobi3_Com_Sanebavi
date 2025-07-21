@@ -170,13 +170,29 @@ export const AlertManager: React.FC<AlertManagerProps> = ({
 
       {filteredAlerts.length === 0 && (
         <div className="text-center py-12">
-          <AlertTriangle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500 text-lg">
-            {filter === 'unresolved' ? 'Nenhum alerta pendente' : 'Nenhum alerta encontrado'}
-          </p>
-          <p className="text-gray-400 mt-2">
-            {filter === 'unresolved' ? 'Tudo está em ordem!' : 'Não há alertas para exibir'}
-          </p>
+          <div className="max-w-md mx-auto">
+            {filter === 'unresolved' ? (
+              <>
+                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle className="w-10 h-10 text-green-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Tudo em ordem! 🎉</h3>
+                <p className="text-gray-500">
+                  Não há alertas pendentes no momento. Seu sistema está funcionando perfeitamente.
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <AlertTriangle className="w-10 h-10 text-gray-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Nenhum alerta encontrado</h3>
+                <p className="text-gray-500">
+                  Não há alertas para exibir com os filtros selecionados.
+                </p>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>

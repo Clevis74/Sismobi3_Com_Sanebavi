@@ -340,8 +340,25 @@ export const TenantManager: React.FC<TenantManagerProps> = ({
 
       {!loading && tenants.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">Nenhum inquilino cadastrado</p>
-          <p className="text-gray-400 mt-2">Comece adicionando seu primeiro inquilino</p>
+          <div className="max-w-md mx-auto">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Users className="w-10 h-10 text-green-600" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Nenhum inquilino cadastrado</h3>
+            <p className="text-gray-500 mb-6">
+              Adicione inquilinos para começar a gerenciar seus contratos e pagamentos de forma organizada.
+            </p>
+            <LoadingButton
+              loading={loading}
+              onClick={() => setShowForm(true)}
+              disabled={isAtDemoLimit}
+              variant="primary"
+              className="px-6 py-3"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Cadastrar Primeiro Inquilino
+            </LoadingButton>
+          </div>
         </div>
       )}
       

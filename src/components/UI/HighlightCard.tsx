@@ -27,13 +27,13 @@ export const HighlightCard: React.FC<HighlightCardProps> = ({
   }, [isHighlighted, highlightDuration]);
 
   const highlightClasses = showHighlight 
-    ? "bg-green-50 border-green-200 shadow-lg transform scale-105" 
-    : "bg-white border-gray-200";
+    ? "bg-gradient-to-br from-green-50 to-green-100 border-green-300 shadow-xl transform scale-105 ring-2 ring-green-200" 
+    : "bg-white border-gray-200 hover:shadow-lg hover:border-gray-300";
 
   return (
     <div 
       className={`
-        transition-all duration-500 ease-in-out border rounded-lg
+        transition-all duration-500 ease-in-out border rounded-xl
         ${highlightClasses} 
         ${className}
       `}
