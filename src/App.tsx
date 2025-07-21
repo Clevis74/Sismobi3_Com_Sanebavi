@@ -24,6 +24,8 @@ import { useTransactions } from './hooks/useTransactions';
 import { useDocuments } from './hooks/useDocuments';
 import { useEnergyBills } from './hooks/useEnergyBills';
 import { useWaterBills } from './hooks/useWaterBills';
+import { useConfirmationModal } from './components/UI/ConfirmationModal';
+import { useEnhancedToast } from './components/UI/EnhancedToast';
 import { testConnection } from './lib/supabaseClient';
 import { calculateFinancialSummary } from './utils/calculations';
 import { useState } from 'react';
@@ -42,6 +44,9 @@ function AppContent() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [supabaseAvailable, setSupabaseAvailable] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
+  
+  const { showConfirmation, ConfirmationModalComponent } = useConfirmationModal();
+  const toast = useEnhancedToast();
 
   // Verificar disponibilidade do Supabase
   React.useEffect(() => {
@@ -129,7 +134,7 @@ function AppContent() {
 
   const handleImport = () => {
     if (!isActivated) {
-      showToast('Funcionalidade disponível apenas na versão completa', 'warning');
+      toast.warning('Funcionalidade disponível apenas na versão completa');
       return;
     }
     
@@ -173,10 +178,10 @@ function AppContent() {
                               (importedData.waterBills?.length || 0) +
                               (importedData.informors?.length || 0);
             
-            showToast(`Backup importado com sucesso! ${totalItems} itens restaurados.`, 'success');
+            toast.success(`Backup importado com sucesso! ${totalItems} itens restaurados.`);
           } catch (error) {
             console.error('Erro ao importar backup:', error);
-            showToast('Erro ao importar backup. Verifique se o arquivo é válido.', 'error');
+            toast.error('Erro ao importar backup. Verifique se o arquivo é válido.');
           } finally {
             setImportLoading(false);
           }
