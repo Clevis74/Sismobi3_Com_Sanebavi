@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useProperties } from './hooks/useProperties';
 import { ActivationProvider } from './contexts/ActivationContext';
 import { useEnhancedToast } from './components/UI/EnhancedToast';
+import { testConnection } from './lib/supabaseClient';
 import { Sidebar } from './components/Layout/Sidebar';
 import { Header } from './components/Layout/Header';
 import { Dashboard } from './components/Dashboard/Dashboard';
@@ -41,6 +42,7 @@ const queryClient = new QueryClient({
 
 function AppContent() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [supabaseAvailable, setSupabaseAvailable] = useState(false);
   const [tenants, setTenants] = useLocalStorage<Tenant[]>('tenants', []);
   const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', []);
   const [alerts, setAlerts] = useLocalStorage<Alert[]>('alerts', []);
@@ -51,7 +53,16 @@ function AppContent() {
   const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('theme', 'light');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Hook para gerenciar propriedades com Supabase
+  // Verificar disponibilidade do Supabase
+  useEffect(() => {
+    const checkSupabase = async () => {
+      const isAvailable = await testConnection();
+      setSupabaseAvailable(isAvailable);
+    };
+    checkSupabase();
+  }, []);
+
+  // Hook para gerenciar propriedades (com fallback para localStorage)
   const {
     properties,
     carregando: carregandoProperties,
@@ -60,7 +71,7 @@ function AppContent() {
     updateProperty,
     deleteProperty,
     recarregarDados: recarregarProperties
-  } = useProperties();
+  } = useProperties(supabaseAvailable);
 
   // Listener para navegação para ativação
   useEffect(() => {

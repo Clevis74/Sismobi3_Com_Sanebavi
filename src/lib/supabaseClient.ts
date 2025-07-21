@@ -209,6 +209,14 @@ export const signOut = async () => {
 // Helper para verificar conexão com Supabase
 export const testConnection = async () => {
   try {
+    // Verificar se as variáveis de ambiente estão configuradas
+    if (!supabaseUrl || !supabaseAnonKey || 
+        supabaseUrl.includes('your-project-ref') || 
+        supabaseAnonKey.includes('your-anon-key')) {
+      console.warn('Supabase não configurado - usando modo offline');
+      return false;
+    }
+
     const { data, error } = await supabase
       .from('properties')
       .select('count')
@@ -220,7 +228,7 @@ export const testConnection = async () => {
     
     return true;
   } catch (error) {
-    console.error('Erro ao testar conexão com Supabase:', error);
+    console.warn('Supabase indisponível - usando modo offline:', error);
     return false;
   }
 };
