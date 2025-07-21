@@ -341,5 +341,3 @@ export const InformorsManager: React.FC = () => {
     </div>
   );
 };
-
-export { InformorsManager }
