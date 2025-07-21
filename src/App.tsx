@@ -17,7 +17,7 @@ import ReportManager from './components/Reports/ReportManager';
 import EnergyCalculator from './components/Energy/EnergyCalculator';
 import SanebaviManager from './components/Sanebavi/SanebaviManager';
 import InformorsManager from './components/Informors/InformorsManager';
-import ActivationForm from './components/Activation/ActivationForm';
+import { ActivationForm } from './components/Activation/ActivationForm';
 
 const queryClient = new QueryClient({
   defaultOptions: {
