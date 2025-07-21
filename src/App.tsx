@@ -8,7 +8,7 @@ import { ActivationProvider } from './contexts/ActivationContext';
 import Header from './components/Layout/Header';
 import Sidebar from './components/Layout/Sidebar';
 import SyncIndicator from './components/Layout/SyncIndicator';
-import Dashboard from './components/Dashboard/Dashboard';
+import { Dashboard } from './components/Dashboard/Dashboard';
 import PropertyManager from './components/Properties/PropertyManager';
 import TenantManager from './components/Tenants/TenantManager';
 import TransactionManager from './components/Transactions/TransactionManager';
