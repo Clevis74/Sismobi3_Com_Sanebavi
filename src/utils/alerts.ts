@@ -20,8 +20,8 @@ export const generateAutomaticAlerts = (
         t.propertyId === property.id &&
         t.type === 'income' &&
         t.category === 'Aluguel' &&
-        new Date(t.date).getMonth() === currentMonth &&
-        new Date(t.date).getFullYear() === currentYear
+        t.date.getMonth() === currentMonth &&
+        t.date.getFullYear() === currentYear
       );
 
       if (!hasRentPayment && now.getDate() > 10) {
