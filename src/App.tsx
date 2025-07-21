@@ -40,6 +40,7 @@ const queryClient = new QueryClient({
 });
 
 function AppContent() {
+  const { isActivated } = useActivation();
   const [showFinancialValues, setShowFinancialValues] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [supabaseAvailable, setSupabaseAvailable] = useState(false);
