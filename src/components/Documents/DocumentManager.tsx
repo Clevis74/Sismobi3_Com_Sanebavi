@@ -6,6 +6,8 @@ import { formatDate } from '../../utils/calculations';
 import { useActivation } from '../../contexts/ActivationContext';
 import { LoadingButton, LoadingOverlay } from '../UI/LoadingSpinner';
 import { HighlightCard, AnimatedListItem } from '../UI/HighlightCard';
+import { useConfirmationModal } from '../UI/ConfirmationModal';
+import { useEnhancedToast } from '../UI/EnhancedToast';
 
 interface DocumentManagerProps {
   documents: Document[];
