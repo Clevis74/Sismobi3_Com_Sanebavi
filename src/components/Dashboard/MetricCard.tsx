@@ -41,7 +41,6 @@ export const MetricCard: React.FC<MetricCardProps> = ({
               </span>
               <span className="ml-2 text-gray-500 text-xs">vs. mês anterior</span>
             </div>
-            </p>
           )}
         </div>
         <div className={`p-4 rounded-xl border-2 ${colorClasses[color]} shadow-sm`}>
