@@ -107,12 +107,12 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({
   };
 
   // Filtrar propriedades e inquilinos ativos
-  const activeProperties = properties.filter(p => p.status === 'rented' || p.tenant);
-  const activeTenants = tenants.filter(t => t.status === 'active');
+  const activeProperties = (properties || []).filter(p => p.status === 'rented' || p.tenant);
+  const activeTenants = (tenants || []).filter(t => t.status === 'active');
   
   // Filtrar inquilinos da propriedade selecionada
   const propertyTenants = formData.propertyId 
-    ? activeTenants.filter(t => t.propertyId === formData.propertyId)
+    ? (activeTenants || []).filter(t => t.propertyId === formData.propertyId)
     : activeTenants;
 
   return (
