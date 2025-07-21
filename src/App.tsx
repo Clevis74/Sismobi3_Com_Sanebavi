@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useProperties } from './hooks/useProperties';
+import { useTenants } from './hooks/useTenants';
 import { ActivationProvider } from './contexts/ActivationContext';
 import { useEnhancedToast } from './components/UI/EnhancedToast';
 import { testConnection } from './lib/supabaseClient';
@@ -43,7 +44,6 @@ const queryClient = new QueryClient({
 function AppContent() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [supabaseAvailable, setSupabaseAvailable] = useState(false);
-  const [tenants, setTenants] = useLocalStorage<Tenant[]>('tenants', []);
   const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', []);
   const [alerts, setAlerts] = useLocalStorage<Alert[]>('alerts', []);
   const [documents, setDocuments] = useLocalStorage<Document[]>('documents', []);
@@ -72,6 +72,17 @@ function AppContent() {
     deleteProperty,
     recarregarDados: recarregarProperties
   } = useProperties(supabaseAvailable);
+
+  // Hook para gerenciar inquilinos (com fallback para localStorage)
+  const {
+    tenants,
+    carregando: carregandoTenants,
+    erro: erroTenants,
+    addTenant,
+    updateTenant,
+    deleteTenant,
+    recarregarDados: recarregarTenants
+  } = useTenants(supabaseAvailable);
 
   // Listener para navegação para ativação
   useEffect(() => {
@@ -115,48 +126,6 @@ function AppContent() {
 
   // Funções para gerenciar propriedades
   // As funções addProperty, updateProperty, deleteProperty agora vêm do hook useProperties
-
-  // Funções para gerenciar inquilinos
-  const addTenant = (tenantData: Omit<Tenant, 'id'>) => {
-    const newTenant: Tenant = {
-      ...tenantData,
-      id: Date.now().toString()
-    };
-    setTenants(prev => [...prev, newTenant]);
-    
-    // Atualizar a propriedade vinculada
-    if (tenantData.propertyId) {
-      // TODO: Atualizar propriedade via Supabase quando implementarmos a relação
-      // updateProperty(tenantData.propertyId, { tenant: newTenant, status: 'rented' });
-    }
-  };
-
-  const updateTenant = (id: string, updates: Partial<Tenant>) => {
-    const oldTenant = tenants.find(t => t.id === id);
-    const updatedTenant = { ...oldTenant, ...updates } as Tenant;
-    
-    setTenants(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
-    
-    // Gerenciar vínculos de propriedades
-    // TODO: Atualizar vínculos de propriedades via Supabase quando implementarmos a relação
-    // if (oldTenant?.propertyId && oldTenant.propertyId !== updatedTenant.propertyId) {
-    //   updateProperty(oldTenant.propertyId, { tenant: undefined, status: 'vacant' });
-    // }
-    // if (updatedTenant.propertyId) {
-    //   updateProperty(updatedTenant.propertyId, { tenant: updatedTenant, status: 'rented' });
-    // }
-  };
-
-  const deleteTenant = (id: string) => {
-    const tenant = tenants.find(t => t.id === id);
-    setTenants(prev => prev.filter(t => t.id !== id));
-    
-    // Remover vínculo da propriedade
-    if (tenant?.propertyId) {
-      // TODO: Atualizar propriedade via Supabase quando implementarmos a relação
-      // updateProperty(tenant.propertyId, { tenant: undefined, status: 'vacant' });
-    }
-  };
 
   // Funções para gerenciar transações
   const addTransaction = (transactionData: Omit<Transaction, 'id'>) => {
@@ -317,11 +286,14 @@ function AppContent() {
         return (
           <TenantManager
             tenants={tenants}
+            loading={carregandoTenants}
+            error={erroTenants}
             properties={properties}
             showFinancialValues={showFinancialValues}
             onAddTenant={addTenant}
             onUpdateTenant={updateTenant}
             onDeleteTenant={deleteTenant}
+            onReload={recarregarTenants}
           />
         );
       case 'transactions':
