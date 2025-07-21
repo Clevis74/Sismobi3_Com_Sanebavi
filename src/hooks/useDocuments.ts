@@ -212,24 +212,24 @@ export function useDocuments(supabaseAvailable: boolean = false) {
   });
 
   // Função para criar novo documento
-  const addDocument = async (documentData: Omit<Document, 'id' | 'lastUpdated'>): Promise<boolean> => {
+  const addDocument = async (documentData: Omit<Document, 'id' | 'lastUpdated'>): Promise<Document | null> => {
     try {
-      await createMutation.mutateAsync(documentData);
-      return true;
+      const newDocument = await createMutation.mutateAsync(documentData);
+      return newDocument;
     } catch (error) {
       // Erro já tratado na mutation
-      return false;
+      return null;
     }
   };
 
   // Função para atualizar documento
-  const updateDocument = async (id: string, updates: Partial<Document>): Promise<boolean> => {
+  const updateDocument = async (id: string, updates: Partial<Document>): Promise<Document | null> => {
     try {
-      await updateMutation.mutateAsync({ id, updates });
-      return true;
+      const updatedDocument = await updateMutation.mutateAsync({ id, updates });
+      return updatedDocument;
     } catch (error) {
       // Erro já tratado na mutation
-      return false;
+      return null;
     }
   };
 

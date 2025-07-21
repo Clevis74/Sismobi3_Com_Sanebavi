@@ -202,24 +202,24 @@ export function useTransactions(supabaseAvailable: boolean = false) {
   });
 
   // Função para criar nova transação
-  const addTransaction = async (transactionData: Omit<Transaction, 'id'>): Promise<boolean> => {
+  const addTransaction = async (transactionData: Omit<Transaction, 'id'>): Promise<Transaction | null> => {
     try {
-      await createMutation.mutateAsync(transactionData);
-      return true;
+      const newTransaction = await createMutation.mutateAsync(transactionData);
+      return newTransaction;
     } catch (error) {
       // Erro já tratado na mutation
-      return false;
+      return null;
     }
   };
 
   // Função para atualizar transação
-  const updateTransaction = async (id: string, updates: Partial<Transaction>): Promise<boolean> => {
+  const updateTransaction = async (id: string, updates: Partial<Transaction>): Promise<Transaction | null> => {
     try {
-      await updateMutation.mutateAsync({ id, updates });
-      return true;
+      const updatedTransaction = await updateMutation.mutateAsync({ id, updates });
+      return updatedTransaction;
     } catch (error) {
       // Erro já tratado na mutation
-      return false;
+      return null;
     }
   };
 

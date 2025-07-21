@@ -214,24 +214,24 @@ export function useEnergyBills(supabaseAvailable: boolean = false) {
   });
 
   // Função para criar nova conta de energia
-  const addEnergyBill = async (billData: Omit<EnergyBill, 'id' | 'createdAt' | 'lastUpdated'>): Promise<boolean> => {
+  const addEnergyBill = async (billData: Omit<EnergyBill, 'id' | 'createdAt' | 'lastUpdated'>): Promise<EnergyBill | null> => {
     try {
-      await createMutation.mutateAsync(billData);
-      return true;
+      const newBill = await createMutation.mutateAsync(billData);
+      return newBill;
     } catch (error) {
       // Erro já tratado na mutation
-      return false;
+      return null;
     }
   };
 
   // Função para atualizar conta de energia
-  const updateEnergyBill = async (id: string, updates: Partial<EnergyBill>): Promise<boolean> => {
+  const updateEnergyBill = async (id: string, updates: Partial<EnergyBill>): Promise<EnergyBill | null> => {
     try {
-      await updateMutation.mutateAsync({ id, updates });
-      return true;
+      const updatedBill = await updateMutation.mutateAsync({ id, updates });
+      return updatedBill;
     } catch (error) {
       // Erro já tratado na mutation
-      return false;
+      return null;
     }
   };
 

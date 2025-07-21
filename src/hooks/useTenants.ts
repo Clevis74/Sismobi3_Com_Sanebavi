@@ -205,24 +205,24 @@ export function useTenants(supabaseAvailable: boolean = false) {
   });
 
   // Função para criar novo inquilino
-  const addTenant = async (tenantData: Omit<Tenant, 'id'>): Promise<boolean> => {
+  const addTenant = async (tenantData: Omit<Tenant, 'id'>): Promise<Tenant | null> => {
     try {
-      await createMutation.mutateAsync(tenantData);
-      return true;
+      const newTenant = await createMutation.mutateAsync(tenantData);
+      return newTenant;
     } catch (error) {
       // Erro já tratado na mutation
-      return false;
+      return null;
     }
   };
 
   // Função para atualizar inquilino
-  const updateTenant = async (id: string, updates: Partial<Tenant>): Promise<boolean> => {
+  const updateTenant = async (id: string, updates: Partial<Tenant>): Promise<Tenant | null> => {
     try {
-      await updateMutation.mutateAsync({ id, updates });
-      return true;
+      const updatedTenant = await updateMutation.mutateAsync({ id, updates });
+      return updatedTenant;
     } catch (error) {
       // Erro já tratado na mutation
-      return false;
+      return null;
     }
   };
 
