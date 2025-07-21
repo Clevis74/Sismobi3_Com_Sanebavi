@@ -214,24 +214,24 @@ export function useWaterBills(supabaseAvailable: boolean = false) {
   });
 
   // Função para criar nova conta de água
-  const addWaterBill = async (billData: Omit<WaterBill, 'id' | 'createdAt' | 'lastUpdated'>): Promise<boolean> => {
+  const addWaterBill = async (billData: Omit<WaterBill, 'id' | 'createdAt' | 'lastUpdated'>): Promise<WaterBill | null> => {
     try {
-      await createMutation.mutateAsync(billData);
-      return true;
+      const newBill = await createMutation.mutateAsync(billData);
+      return newBill;
     } catch (error) {
       // Erro já tratado na mutation
-      return false;
+      return null;
     }
   };
 
   // Função para atualizar conta de água
-  const updateWaterBill = async (id: string, updates: Partial<WaterBill>): Promise<boolean> => {
+  const updateWaterBill = async (id: string, updates: Partial<WaterBill>): Promise<WaterBill | null> => {
     try {
-      await updateMutation.mutateAsync({ id, updates });
-      return true;
+      const updatedBill = await updateMutation.mutateAsync({ id, updates });
+      return updatedBill;
     } catch (error) {
       // Erro já tratado na mutation
-      return false;
+      return null;
     }
   };
 

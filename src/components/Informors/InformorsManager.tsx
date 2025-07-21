@@ -79,30 +79,30 @@ export const InformorsManager: React.FC = () => {
       return; // Não permite adicionar se estiver no limite do demo
     }
     
-    const sucesso = await salvarInformor(dados);
-    if (sucesso) {
+    const newInformor = await salvarInformor(dados);
+    if (newInformor) {
       setShowForm(false);
       setEditingInformor(null);
       
-      // Destacar o novo item (assumindo que será o último da lista)
-      setTimeout(() => {
-        const ultimoInformor = informors[informors.length - 1];
-        if (ultimoInformor) {
-          setHighlightedId(ultimoInformor.id);
-          setNewItemId(ultimoInformor.id);
-        }
-      }, 100);
+      // Destacar o novo item usando o ID retornado
+      setHighlightedId(newInformor.id);
+      setNewItemId(newInformor.id);
+      
+      // Limpar destaque após 3 segundos
+      setTimeout(() => setHighlightedId(null), 3000);
+      setTimeout(() => setNewItemId(null), 1000);
     }
   };
 
   const handleAtualizar = async (dados: Omit<Informor, 'id'>) => {
     if (!editingInformor) return;
     
-    const sucesso = await atualizarInformor(editingInformor.id, dados);
-    if (sucesso) {
+    const updatedInformor = await atualizarInformor(editingInformor.id, dados);
+    if (updatedInformor) {
       setShowForm(false);
       setEditingInformor(null);
-      setHighlightedId(editingInformor.id);
+      setHighlightedId(updatedInformor.id);
+      setTimeout(() => setHighlightedId(null), 3000);
     }
   };
 
@@ -341,3 +341,5 @@ export const InformorsManager: React.FC = () => {
     </div>
   );
 };
+
+export { InformorsManager }

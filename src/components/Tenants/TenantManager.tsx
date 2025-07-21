@@ -61,22 +61,17 @@ export const TenantManager: React.FC<TenantManagerProps> = ({
     setInternalLoading(true);
     
     try {
-      const success = await onAddTenant(tenantData);
-      if (success) {
+      const newTenant = await onAddTenant(tenantData);
+      if (newTenant) {
         setShowForm(false);
         
-        // Destacar o novo item (será o primeiro da lista após a criação)
-        setTimeout(() => {
-          const newestTenant = tenants[0];
-          if (newestTenant) {
-            setHighlightedId(newestTenant.id);
-            setNewItemId(newestTenant.id);
-            
-            // Limpar destaque após 3 segundos
-            setTimeout(() => setHighlightedId(null), 3000);
-            setTimeout(() => setNewItemId(null), 1000);
-          }
-        }, 100);
+        // Destacar o novo item usando o ID retornado
+        setHighlightedId(newTenant.id);
+        setNewItemId(newTenant.id);
+        
+        // Limpar destaque após 3 segundos
+        setTimeout(() => setHighlightedId(null), 3000);
+        setTimeout(() => setNewItemId(null), 1000);
       }
     } finally {
       setInternalLoading(false);
@@ -93,13 +88,13 @@ export const TenantManager: React.FC<TenantManagerProps> = ({
       setInternalLoading(true);
       
       try {
-        const success = await onUpdateTenant(editingTenant.id, tenantData);
-        if (success) {
+        const updatedTenant = await onUpdateTenant(editingTenant.id, tenantData);
+        if (updatedTenant) {
           setEditingTenant(null);
           setShowForm(false);
           
           // Destacar o item editado
-          setHighlightedId(editingTenant.id);
+          setHighlightedId(updatedTenant.id);
           setTimeout(() => setHighlightedId(null), 3000);
         }
       } finally {

@@ -62,22 +62,17 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
     setInternalLoading(true);
     
     try {
-      const success = await onAddDocument(documentData);
-      if (success) {
+      const newDocument = await onAddDocument(documentData);
+      if (newDocument) {
         setShowForm(false);
         
-        // Destacar o novo item (será o primeiro da lista após a criação)
-        setTimeout(() => {
-          const newestDocument = documents[0];
-          if (newestDocument) {
-            setHighlightedId(newestDocument.id);
-            setNewItemId(newestDocument.id);
-            
-            // Limpar destaque após 3 segundos
-            setTimeout(() => setHighlightedId(null), 3000);
-            setTimeout(() => setNewItemId(null), 1000);
-          }
-        }, 100);
+        // Destacar o novo item usando o ID retornado
+        setHighlightedId(newDocument.id);
+        setNewItemId(newDocument.id);
+        
+        // Limpar destaque após 3 segundos
+        setTimeout(() => setHighlightedId(null), 3000);
+        setTimeout(() => setNewItemId(null), 1000);
       }
     } finally {
       setInternalLoading(false);
@@ -124,13 +119,13 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
       setInternalLoading(true);
       
       try {
-        const success = await onUpdateDocument(editingDocument.id, documentData);
-        if (success) {
+        const updatedDocument = await onUpdateDocument(editingDocument.id, documentData);
+        if (updatedDocument) {
           setEditingDocument(null);
           setShowForm(false);
           
           // Destacar o item editado
-          setHighlightedId(editingDocument.id);
+          setHighlightedId(updatedDocument.id);
           setTimeout(() => setHighlightedId(null), 3000);
         }
       } finally {

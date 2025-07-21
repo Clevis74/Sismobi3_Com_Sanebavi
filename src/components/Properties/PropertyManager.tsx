@@ -59,22 +59,17 @@ export const PropertyManager: React.FC<PropertyManagerProps> = ({
     setInternalLoading(true);
     
     try {
-      const success = await onAddProperty(propertyData);
-      if (success) {
+      const newProperty = await onAddProperty(propertyData);
+      if (newProperty) {
         setShowForm(false);
         
-        // Destacar o novo item (será o primeiro da lista após a criação)
-        setTimeout(() => {
-          const newestProperty = properties[0];
-          if (newestProperty) {
-            setHighlightedId(newestProperty.id);
-            setNewItemId(newestProperty.id);
-            
-            // Limpar destaque após 3 segundos
-            setTimeout(() => setHighlightedId(null), 3000);
-            setTimeout(() => setNewItemId(null), 1000);
-          }
-        }, 100);
+        // Destacar o novo item usando o ID retornado
+        setHighlightedId(newProperty.id);
+        setNewItemId(newProperty.id);
+        
+        // Limpar destaque após 3 segundos
+        setTimeout(() => setHighlightedId(null), 3000);
+        setTimeout(() => setNewItemId(null), 1000);
       }
     } finally {
       setInternalLoading(false);
@@ -91,13 +86,13 @@ export const PropertyManager: React.FC<PropertyManagerProps> = ({
       setInternalLoading(true);
       
       try {
-        const success = await onUpdateProperty(editingProperty.id, propertyData);
-        if (success) {
+        const updatedProperty = await onUpdateProperty(editingProperty.id, propertyData);
+        if (updatedProperty) {
           setEditingProperty(null);
           setShowForm(false);
           
           // Destacar o item editado
-          setHighlightedId(editingProperty.id);
+          setHighlightedId(updatedProperty.id);
           setTimeout(() => setHighlightedId(null), 3000);
         }
       } finally {

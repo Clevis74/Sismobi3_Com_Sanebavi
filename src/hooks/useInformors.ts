@@ -219,7 +219,7 @@ export function useInformors(supabaseAvailable?: boolean) {
   });
 
   // Função para criar novo informor com validação
-  const salvarInformor = async (novo: Omit<Informor, 'id'>): Promise<boolean> => {
+  const salvarInformor = async (novo: Omit<Informor, 'id'>): Promise<Informor | null> => {
     try {
       // Validar os dados antes de enviar
       const resultado = informorSchema.safeParse({ ...novo, id: 'temp' });
@@ -227,15 +227,15 @@ export function useInformors(supabaseAvailable?: boolean) {
       if (!resultado.success) {
         console.error('Erro de validação:', resultado.error.format());
         toast.error('Dados inválidos! Verifique os campos preenchidos.');
-        return false;
+        return null;
       }
 
       // Executar a mutation
-      await salvarMutation.mutateAsync(novo);
-      return true;
+      const newInformor = await salvarMutation.mutateAsync(novo);
+      return newInformor;
     } catch (error) {
       // Erro já tratado na mutation
-      return false;
+      return null;
     }
   };
 
@@ -251,13 +251,13 @@ export function useInformors(supabaseAvailable?: boolean) {
   };
 
   // Função para atualizar informor
-  const atualizarInformor = async (id: string, dados: Partial<Omit<Informor, 'id'>>): Promise<boolean> => {
+  const atualizarInformor = async (id: string, dados: Partial<Omit<Informor, 'id'>>): Promise<Informor | null> => {
     try {
-      await atualizarMutation.mutateAsync({ id, updates: dados });
-      return true;
+      const updatedInformor = await atualizarMutation.mutateAsync({ id, updates: dados });
+      return updatedInformor;
     } catch (error) {
       // Erro já tratado na mutation
-      return false;
+      return null;
     }
   };
 

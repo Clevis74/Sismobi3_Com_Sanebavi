@@ -209,27 +209,24 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
     try {
       let success = false;
       if (editingBill) {
-        success = await onUpdateWaterBill(editingBill.id, billData);
-        if (success) {
+        const updatedBill = await onUpdateWaterBill(editingBill.id, billData);
+        if (updatedBill) {
           // Destacar o item editado
-          setHighlightedId(editingBill.id);
+          setHighlightedId(updatedBill.id);
           setTimeout(() => setHighlightedId(null), 3000);
+          success = true;
         }
       } else {
-        success = await onAddWaterBill(billData);
-        if (success) {
-          // Destacar o novo item (será o primeiro da lista após a criação)
-          setTimeout(() => {
-            const newestBill = waterBills[0];
-            if (newestBill) {
-              setHighlightedId(newestBill.id);
-              setNewItemId(newestBill.id);
-              
-              // Limpar destaque após 3 segundos
-              setTimeout(() => setHighlightedId(null), 3000);
-              setTimeout(() => setNewItemId(null), 1000);
-            }
-          }, 100);
+        const newBill = await onAddWaterBill(billData);
+        if (newBill) {
+          // Destacar o novo item usando o ID retornado
+          setHighlightedId(newBill.id);
+          setNewItemId(newBill.id);
+          
+          // Limpar destaque após 3 segundos
+          setTimeout(() => setHighlightedId(null), 3000);
+          setTimeout(() => setNewItemId(null), 1000);
+          success = true;
         }
       }
       
@@ -765,7 +762,12 @@ export const SanebaviManager: React.FC<SanebaviManagerProps> = ({
                         </button>
                         <LoadingButton
                           loading={loading}
-                          onClick={() => handleDeleteBill(bill)}
+                         onClick={async () => {
+                           const success = await onDeleteWaterBill(bill.id);
+                           if (success) {
+                             toast.deleted('Conta de água');
+                           }
+                         }}
                           variant="danger"
                           className="text-red-600 hover:text-red-900 text-sm"
                         >

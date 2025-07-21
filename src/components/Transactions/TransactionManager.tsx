@@ -59,8 +59,8 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
     setInternalLoading(true);
     
     try {
-      const success = await onAddTransaction(transactionData);
-      if (success) {
+      const newTransaction = await onAddTransaction(transactionData);
+      if (newTransaction) {
         setShowForm(false);
       }
     } finally {
@@ -78,8 +78,8 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
       setInternalLoading(true);
       
       try {
-        const success = await onUpdateTransaction(editingTransaction.id, transactionData);
-        if (success) {
+        const updatedTransaction = await onUpdateTransaction(editingTransaction.id, transactionData);
+        if (updatedTransaction) {
           setEditingTransaction(null);
           setShowForm(false);
         }

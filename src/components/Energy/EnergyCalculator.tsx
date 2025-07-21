@@ -258,27 +258,24 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
     try {
       let success = false;
       if (editingBill) {
-        success = await onUpdateEnergyBill(editingBill.id, billData);
-        if (success) {
+        const updatedBill = await onUpdateEnergyBill(editingBill.id, billData);
+        if (updatedBill) {
           // Destacar o item editado
-          setHighlightedId(editingBill.id);
+          setHighlightedId(updatedBill.id);
           setTimeout(() => setHighlightedId(null), 3000);
+          success = true;
         }
       } else {
-        success = await onAddEnergyBill(billData);
-        if (success) {
-          // Destacar o novo item (será o primeiro da lista após a criação)
-          setTimeout(() => {
-            const newestBill = energyBills[0];
-            if (newestBill) {
-              setHighlightedId(newestBill.id);
-              setNewItemId(newestBill.id);
-              
-              // Limpar destaque após 3 segundos
-              setTimeout(() => setHighlightedId(null), 3000);
-              setTimeout(() => setNewItemId(null), 1000);
-            }
-          }, 100);
+        const newBill = await onAddEnergyBill(billData);
+        if (newBill) {
+          // Destacar o novo item usando o ID retornado
+          setHighlightedId(newBill.id);
+          setNewItemId(newBill.id);
+          
+          // Limpar destaque após 3 segundos
+          setTimeout(() => setHighlightedId(null), 3000);
+          setTimeout(() => setNewItemId(null), 1000);
+          success = true;
         }
       }
       if (success) {
