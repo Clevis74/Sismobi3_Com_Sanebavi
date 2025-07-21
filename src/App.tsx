@@ -19,6 +19,7 @@ import { SanebaviManager } from './components/Sanebavi/SanebaviManager';
 import { InformorsManager } from './components/Informors/InformorsManager';
 import { ActivationForm } from './components/Activation/ActivationForm';
 import { useProperties } from './hooks/useProperties';
+import { useTenants } from './hooks/useTenants';
 import { useTransactions } from './hooks/useTransactions';
 import { calculateFinancialSummary } from './utils/calculations';
 import { useState } from 'react';
@@ -37,6 +38,7 @@ function AppContent() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   
   const { data: properties = [] } = useProperties();
+  const { data: tenants = [] } = useTenants();
   const { data: transactions = [] } = useTransactions();
   
   const financialSummary = calculateFinancialSummary(properties, transactions);
@@ -98,7 +100,25 @@ function AppContent() {
                   }}
                 />
               } />
-              <Route path="/tenants" element={<TenantManager />} />
+              <Route path="/tenants" element={
+                <TenantManager 
+                  tenants={tenants}
+                  properties={properties}
+                  showFinancialValues={showFinancialValues}
+                  onAddTenant={(tenant) => {
+                    // TODO: Implement add tenant functionality
+                    console.log('Add tenant:', tenant);
+                  }}
+                  onEditTenant={(tenant) => {
+                    // TODO: Implement edit tenant functionality
+                    console.log('Edit tenant:', tenant);
+                  }}
+                  onDeleteTenant={(id) => {
+                    // TODO: Implement delete tenant functionality
+                    console.log('Delete tenant:', id);
+                  }}
+                />
+              } />
               <Route path="/transactions" element={<TransactionManager />} />
               <Route path="/documents" element={<DocumentManager />} />
               <Route path="/reports" element={<ReportManager />} />
