@@ -123,6 +123,22 @@ export const TenantManager: React.FC<TenantManagerProps> = ({
     });
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'inactive': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'active': return 'Ativo';
+      case 'inactive': return 'Inativo';
+      default: return 'Indefinido';
+    }
+  };
+
   // Mostrar erro se houver
   if (externalError) {
     return (
@@ -332,20 +348,4 @@ export const TenantManager: React.FC<TenantManagerProps> = ({
       {ConfirmationModalComponent}
     </div>
   );
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'inactive': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'active': return 'Ativo';
-      case 'inactive': return 'Inativo';
-      default: return 'Indefinido';
-    }
-  };
 };
