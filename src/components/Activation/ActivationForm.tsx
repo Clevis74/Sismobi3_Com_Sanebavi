@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, Key, AlertTriangle, CheckCircle, Mail, Phone, Loader } from 'lucide-react';
+import { Shield, Key, AlertTriangle, CheckCircle, Mail, Phone, Loader, Download } from 'lucide-react';
 import { useActivation } from '../../contexts/ActivationContext';
 import { LoadingButton } from '../UI/LoadingSpinner';
 
