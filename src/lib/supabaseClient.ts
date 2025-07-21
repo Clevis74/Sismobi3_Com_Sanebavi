@@ -195,6 +195,56 @@ export type Database = {
           created_at?: string;
         };
       };
+      documents: {
+        Row: {
+          id: string;
+          type: 'Contrato de locação' | 'Comprovante de pagamento' | 'RG' | 'CPF' | 'Laudo técnico' | 'Outros';
+          issue_date: string;
+          has_validity: boolean;
+          validity_date: string | null;
+          file_name: string | null;
+          file_url: string | null;
+          observations: string | null;
+          property_id: string;
+          tenant_id: string | null;
+          status: 'Válido' | 'Expirado' | 'Pendente' | 'Revisão';
+          contract_signed: boolean;
+          last_updated: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          type: 'Contrato de locação' | 'Comprovante de pagamento' | 'RG' | 'CPF' | 'Laudo técnico' | 'Outros';
+          issue_date: string;
+          has_validity: boolean;
+          validity_date?: string | null;
+          file_name?: string | null;
+          file_url?: string | null;
+          observations?: string | null;
+          property_id: string;
+          tenant_id?: string | null;
+          status: 'Válido' | 'Expirado' | 'Pendente' | 'Revisão';
+          contract_signed: boolean;
+          last_updated?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          type?: 'Contrato de locação' | 'Comprovante de pagamento' | 'RG' | 'CPF' | 'Laudo técnico' | 'Outros';
+          issue_date?: string;
+          has_validity?: boolean;
+          validity_date?: string | null;
+          file_name?: string | null;
+          file_url?: string | null;
+          observations?: string | null;
+          property_id?: string;
+          tenant_id?: string | null;
+          status?: 'Válido' | 'Expirado' | 'Pendente' | 'Revisão';
+          contract_signed?: boolean;
+          last_updated?: string;
+          created_at?: string;
+        };
+      };
       // Mais tabelas serão adicionadas conforme necessário
     };
     Views: {
