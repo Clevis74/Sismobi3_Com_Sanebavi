@@ -14,7 +14,7 @@ interface SyncStatus {
 interface PendingChange {
   id: string;
   type: 'create' | 'update' | 'delete';
-  entity: 'properties' | 'tenants' | 'transactions';
+  entity: 'properties' | 'tenants' | 'transactions' | 'informors';
   data: any;
   timestamp: Date;
 }
@@ -141,6 +141,22 @@ export function useSyncManager() {
         }
       }
       
+      if (change.entity === 'informors') {
+        const { informorService } = await import('../services/supabaseService');
+        
+        switch (change.type) {
+          case 'create':
+            await informorService.create(change.data);
+            break;
+          case 'update':
+            await informorService.update(change.data.id, change.data);
+            break;
+          case 'delete':
+            await informorService.delete(change.data.id);
+            break;
+        }
+      }
+      
       return true;
     } catch (error) {
       console.error(`Erro ao sincronizar mudança ${change.id}:`, error);
@@ -205,6 +221,7 @@ export function useSyncManager() {
       queryClient.invalidateQueries(['properties']);
       queryClient.invalidateQueries(['tenants']);
       queryClient.invalidateQueries(['transactions']);
+      queryClient.invalidateQueries(['informors']);
     }
 
     setSyncStatus(prev => ({
