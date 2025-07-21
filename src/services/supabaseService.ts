@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabaseClient';
 import { Property, Tenant, Transaction } from '../types';
+import { Informor } from '../types/informor';
 
 // Serviços para Properties
 export const propertyService = {
@@ -220,6 +221,65 @@ export const transactionService = {
   }
 };
 
+// Serviços para Informors
+export const informorService = {
+  // Buscar todos os informors
+  async getAll() {
+    const { data, error } = await supabase
+      .from('informors')
+      .select('*')
+      .order('vencimento', { ascending: true });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Criar novo informor
+  async create(informor: Omit<Informor, 'id'>) {
+    const { data, error } = await supabase
+      .from('informors')
+      .insert({
+        nome: informor.nome,
+        valor: informor.valor,
+        vencimento: informor.vencimento
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Atualizar informor
+  async update(id: string, updates: Partial<Informor>) {
+    const updateData: any = {};
+    
+    if (updates.nome) updateData.nome = updates.nome;
+    if (updates.valor !== undefined) updateData.valor = updates.valor;
+    if (updates.vencimento) updateData.vencimento = updates.vencimento;
+
+    const { data, error } = await supabase
+      .from('informors')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Deletar informor
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('informors')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  }
+};
+
 // Utilitário para converter dados do Supabase para o formato da aplicação
 export const mappers = {
   // Converter propriedade do Supabase para o formato da aplicação
@@ -270,6 +330,16 @@ export const mappers = {
       description: data.description,
       date: new Date(data.date),
       recurring: data.recurring
+    };
+  },
+
+  // Converter informor do Supabase para o formato da aplicação
+  informorFromSupabase(data: any): Informor {
+    return {
+      id: data.id,
+      nome: data.nome,
+      valor: data.valor,
+      vencimento: data.vencimento
     };
   }
 };
