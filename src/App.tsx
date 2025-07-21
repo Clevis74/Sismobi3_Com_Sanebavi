@@ -4,6 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useProperties } from './hooks/useProperties';
 import { useTenants } from './hooks/useTenants';
+import { useTransactions } from './hooks/useTransactions';
 import { useSyncManager } from './hooks/useSyncManager';
 import { ActivationProvider } from './contexts/ActivationContext';
 import { useEnhancedToast } from './components/UI/EnhancedToast';
@@ -25,7 +26,7 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 import { calculateFinancialSummary } from './utils/calculations';
 import { generateAutomaticAlerts, processRecurringTransactions } from './utils/alerts';
 import { createBackup, exportBackup, importBackup, validateBackup, BackupData } from './utils/dataBackup';
-import { Tenant, Transaction, Alert, Document, EnergyBill, WaterBill } from './types';
+import { Tenant, Alert, Document, EnergyBill, WaterBill } from './types';
 
 // Configuração do cliente do TanStack Query
 const queryClient = new QueryClient({
@@ -49,7 +50,6 @@ function AppContent() {
   // Inicializar o gerenciador de sincronização
   const { syncStatus } = useSyncManager();
   
-  const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', []);
   const [alerts, setAlerts] = useLocalStorage<Alert[]>('alerts', []);
   const [documents, setDocuments] = useLocalStorage<Document[]>('documents', []);
   const [energyBills, setEnergyBills] = useLocalStorage<EnergyBill[]>('energyBills', []);
@@ -89,6 +89,17 @@ function AppContent() {
     recarregarDados: recarregarTenants
   } = useTenants(supabaseAvailable);
 
+  // Hook para gerenciar transações (com fallback para localStorage)
+  const {
+    transactions,
+    carregando: carregandoTransactions,
+    erro: erroTransactions,
+    addTransaction,
+    updateTransaction,
+    deleteTransaction,
+    recarregarDados: recarregarTransactions
+  } = useTransactions(supabaseAvailable);
+
   // Listener para navegação para ativação
   useEffect(() => {
     const handleNavigateToActivation = () => {
@@ -117,37 +128,22 @@ function AppContent() {
     if (newAlerts.length > 0) {
       setAlerts(prev => [...prev, ...newAlerts]);
     }
-  }, [properties, tenants, transactions, energyBills, waterBills]);
+  }, [properties, tenants, transactions, energyBills, waterBills, alerts]);
 
   // Processar transações recorrentes
   useEffect(() => {
-    const recurringTransactions = processRecurringTransactions(transactions);
-    if (recurringTransactions.length > 0) {
-      setTransactions(prev => [...prev, ...recurringTransactions]);
+    if (transactions.length > 0) {
+      const recurringTransactions = processRecurringTransactions(transactions);
+      if (recurringTransactions.length > 0) {
+        // Adicionar transações recorrentes usando o hook
+        recurringTransactions.forEach(transaction => {
+          addTransaction(transaction);
+        });
+      }
     }
-  }, [transactions]);
+  }, [transactions.length]); // Usar length para evitar loop infinito
 
   const summary = calculateFinancialSummary(properties, transactions);
-
-  // Funções para gerenciar propriedades
-  // As funções addProperty, updateProperty, deleteProperty agora vêm do hook useProperties
-
-  // Funções para gerenciar transações
-  const addTransaction = (transactionData: Omit<Transaction, 'id'>) => {
-    const newTransaction: Transaction = {
-      ...transactionData,
-      id: Date.now().toString()
-    };
-    setTransactions(prev => [...prev, newTransaction]);
-  };
-
-  const updateTransaction = (id: string, updates: Partial<Transaction>) => {
-    setTransactions(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
-  };
-
-  const deleteTransaction = (id: string) => {
-    setTransactions(prev => prev.filter(t => t.id !== id));
-  };
 
   // Funções para gerenciar alertas
   const resolveAlert = (id: string) => {
@@ -242,10 +238,12 @@ function AppContent() {
         try {
           const backupData = await importBackup(file);
           if (validateBackup(backupData)) {
-            // TODO: Implementar importação via Supabase
-            // setProperties(backupData.properties);
-            setTenants(backupData.tenants);
-            setTransactions(backupData.transactions);
+            // Importar dados usando os hooks
+            // TODO: Implementar importação em lote para propriedades e inquilinos
+            // Por enquanto, importar apenas dados locais
+            backupData.transactions.forEach(transaction => {
+              addTransaction(transaction);
+            });
             setAlerts(backupData.alerts);
             setDocuments(backupData.documents || []);
             setEnergyBills(backupData.energyBills || []);
@@ -305,11 +303,14 @@ function AppContent() {
         return (
           <TransactionManager
             transactions={transactions}
+            loading={carregandoTransactions}
+            error={erroTransactions}
             properties={properties}
             showFinancialValues={showFinancialValues}
             onAddTransaction={addTransaction}
             onUpdateTransaction={updateTransaction}
             onDeleteTransaction={deleteTransaction}
+            onReload={recarregarTransactions}
           />
         );
       case 'alerts':
