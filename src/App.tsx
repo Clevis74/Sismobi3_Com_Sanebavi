@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useProperties } from './hooks/useProperties';
 import { ActivationProvider } from './contexts/ActivationContext';
 import { useEnhancedToast } from './components/UI/EnhancedToast';
 import { Sidebar } from './components/Layout/Sidebar';
@@ -21,7 +22,7 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 import { calculateFinancialSummary } from './utils/calculations';
 import { generateAutomaticAlerts, processRecurringTransactions } from './utils/alerts';
 import { createBackup, exportBackup, importBackup, validateBackup, BackupData } from './utils/dataBackup';
-import { Property, Tenant, Transaction, Alert, Document, EnergyBill, WaterBill } from './types';
+import { Tenant, Transaction, Alert, Document, EnergyBill, WaterBill } from './types';
 
 // Configuração do cliente do TanStack Query
 const queryClient = new QueryClient({
@@ -38,9 +39,8 @@ const queryClient = new QueryClient({
   },
 });
 
-function App() {
+function AppContent() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [properties, setProperties] = useLocalStorage<Property[]>('properties', []);
   const [tenants, setTenants] = useLocalStorage<Tenant[]>('tenants', []);
   const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', []);
   const [alerts, setAlerts] = useLocalStorage<Alert[]>('alerts', []);
@@ -50,6 +50,17 @@ function App() {
   const [showFinancialValues, setShowFinancialValues] = useLocalStorage<boolean>('showFinancialValues', true);
   const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('theme', 'light');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Hook para gerenciar propriedades com Supabase
+  const {
+    properties,
+    carregando: carregandoProperties,
+    erro: erroProperties,
+    addProperty,
+    updateProperty,
+    deleteProperty,
+    recarregarDados: recarregarProperties
+  } = useProperties();
 
   // Listener para navegação para ativação
   useEffect(() => {
@@ -92,23 +103,7 @@ function App() {
   const summary = calculateFinancialSummary(properties, transactions);
 
   // Funções para gerenciar propriedades
-  const addProperty = (propertyData: Omit<Property, 'id' | 'createdAt'>) => {
-    const newProperty: Property = {
-      ...propertyData,
-      id: Date.now().toString(),
-      createdAt: new Date()
-    };
-    setProperties(prev => [...prev, newProperty]);
-  };
-
-  const updateProperty = (id: string, updates: Partial<Property>) => {
-    setProperties(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
-  };
-
-  const deleteProperty = (id: string) => {
-    setProperties(prev => prev.filter(p => p.id !== id));
-    setTransactions(prev => prev.filter(t => t.propertyId !== id));
-  };
+  // As funções addProperty, updateProperty, deleteProperty agora vêm do hook useProperties
 
   // Funções para gerenciar inquilinos
   const addTenant = (tenantData: Omit<Tenant, 'id'>) => {
@@ -120,11 +115,8 @@ function App() {
     
     // Atualizar a propriedade vinculada
     if (tenantData.propertyId) {
-      setProperties(prev => prev.map(property => 
-        property.id === tenantData.propertyId 
-          ? { ...property, tenant: newTenant, status: 'rented' as const }
-          : property
-      ));
+      // TODO: Atualizar propriedade via Supabase quando implementarmos a relação
+      // updateProperty(tenantData.propertyId, { tenant: newTenant, status: 'rented' });
     }
   };
 
@@ -135,24 +127,13 @@ function App() {
     setTenants(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
     
     // Gerenciar vínculos de propriedades
-    setProperties(prev => prev.map(property => {
-      // Remover vínculo da propriedade antiga se mudou
-      if (oldTenant?.propertyId && oldTenant.propertyId !== updatedTenant.propertyId && property.id === oldTenant.propertyId) {
-        return { ...property, tenant: undefined, status: 'vacant' as const };
-      }
-      
-      // Adicionar vínculo à nova propriedade
-      if (property.id === updatedTenant.propertyId) {
-        return { ...property, tenant: updatedTenant, status: 'rented' as const };
-      }
-      
-      // Atualizar dados do inquilino na propriedade atual se não mudou de propriedade
-      if (property.tenant?.id === id) {
-        return { ...property, tenant: updatedTenant };
-      }
-      
-      return property;
-    }));
+    // TODO: Atualizar vínculos de propriedades via Supabase quando implementarmos a relação
+    // if (oldTenant?.propertyId && oldTenant.propertyId !== updatedTenant.propertyId) {
+    //   updateProperty(oldTenant.propertyId, { tenant: undefined, status: 'vacant' });
+    // }
+    // if (updatedTenant.propertyId) {
+    //   updateProperty(updatedTenant.propertyId, { tenant: updatedTenant, status: 'rented' });
+    // }
   };
 
   const deleteTenant = (id: string) => {
@@ -161,11 +142,8 @@ function App() {
     
     // Remover vínculo da propriedade
     if (tenant?.propertyId) {
-      setProperties(prev => prev.map(property => 
-        property.id === tenant.propertyId 
-          ? { ...property, tenant: undefined, status: 'vacant' as const }
-          : property
-      ));
+      // TODO: Atualizar propriedade via Supabase quando implementarmos a relação
+      // updateProperty(tenant.propertyId, { tenant: undefined, status: 'vacant' });
     }
   };
 
@@ -279,7 +257,8 @@ function App() {
         try {
           const backupData = await importBackup(file);
           if (validateBackup(backupData)) {
-            setProperties(backupData.properties);
+            // TODO: Implementar importação via Supabase
+            // setProperties(backupData.properties);
             setTenants(backupData.tenants);
             setTransactions(backupData.transactions);
             setAlerts(backupData.alerts);
@@ -314,10 +293,13 @@ function App() {
         return (
           <PropertyManager
             properties={properties}
+            loading={carregandoProperties}
+            error={erroProperties}
             showFinancialValues={showFinancialValues}
             onAddProperty={addProperty}
             onUpdateProperty={updateProperty}
             onDeleteProperty={deleteProperty}
+            onReload={recarregarProperties}
           />
         );
       case 'tenants':
@@ -458,6 +440,16 @@ function App() {
             />
           </div>
         </div>
+      </ActivationProvider>
+    </QueryClientProvider>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ActivationProvider>
+        <AppContent />
       </ActivationProvider>
     </QueryClientProvider>
   );
