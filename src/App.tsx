@@ -21,6 +21,9 @@ import { ActivationForm } from './components/Activation/ActivationForm';
 import { useProperties } from './hooks/useProperties';
 import { useTenants } from './hooks/useTenants';
 import { useTransactions } from './hooks/useTransactions';
+import { useDocuments } from './hooks/useDocuments';
+import { useEnergyBills } from './hooks/useEnergyBills';
+import { useWaterBills } from './hooks/useWaterBills';
 import { calculateFinancialSummary } from './utils/calculations';
 import { useState } from 'react';
 
@@ -40,6 +43,9 @@ function AppContent() {
   const { data: properties = [] } = useProperties();
   const { data: tenants = [] } = useTenants();
   const { data: transactions = [] } = useTransactions();
+  const { data: documents = [] } = useDocuments();
+  const { data: energyBills = [] } = useEnergyBills();
+  const { data: waterBills = [] } = useWaterBills();
   
   const financialSummary = calculateFinancialSummary(properties, transactions);
 
@@ -119,7 +125,6 @@ function AppContent() {
                   }}
                 />
               } />
-              <Route path="/transactions" element={<TransactionManager />} />
               <Route path="/transactions" element={
                 <TransactionManager 
                   transactions={transactions}
@@ -141,10 +146,74 @@ function AppContent() {
                   error={null}
                 />
               } />
-              <Route path="/documents" element={<DocumentManager />} />
-              <Route path="/reports" element={<ReportManager />} />
-              <Route path="/energy" element={<EnergyCalculator />} />
-              <Route path="/sanebavi" element={<SanebaviManager />} />
+              <Route path="/documents" element={
+                <DocumentManager 
+                  documents={documents}
+                  onAddDocument={(document) => {
+                    // TODO: Implement add document functionality
+                    console.log('Add document:', document);
+                  }}
+                  onUpdateDocument={(document) => {
+                    // TODO: Implement update document functionality
+                    console.log('Update document:', document);
+                  }}
+                  onDeleteDocument={(id) => {
+                    // TODO: Implement delete document functionality
+                    console.log('Delete document:', id);
+                  }}
+                  loading={false}
+                  error={null}
+                />
+              } />
+              <Route path="/reports" element={
+                <ReportManager 
+                  properties={properties}
+                  tenants={tenants}
+                  transactions={transactions}
+                  documents={documents}
+                  showFinancialValues={showFinancialValues}
+                />
+              } />
+              <Route path="/energy" element={
+                <EnergyCalculator 
+                  energyBills={energyBills}
+                  waterBills={waterBills}
+                  properties={properties}
+                  onAddEnergyBill={(bill) => {
+                    // TODO: Implement add energy bill functionality
+                    console.log('Add energy bill:', bill);
+                  }}
+                  onAddWaterBill={(bill) => {
+                    // TODO: Implement add water bill functionality
+                    console.log('Add water bill:', bill);
+                  }}
+                  onUpdateEnergyBill={(bill) => {
+                    // TODO: Implement update energy bill functionality
+                    console.log('Update energy bill:', bill);
+                  }}
+                  onUpdateWaterBill={(bill) => {
+                    // TODO: Implement update water bill functionality
+                    console.log('Update water bill:', bill);
+                  }}
+                  onDeleteEnergyBill={(id) => {
+                    // TODO: Implement delete energy bill functionality
+                    console.log('Delete energy bill:', id);
+                  }}
+                  onDeleteWaterBill={(id) => {
+                    // TODO: Implement delete water bill functionality
+                    console.log('Delete water bill:', id);
+                  }}
+                  loading={false}
+                  error={null}
+                />
+              } />
+              <Route path="/sanebavi" element={
+                <SanebaviManager 
+                  properties={properties}
+                  tenants={tenants}
+                  showFinancialValues={showFinancialValues}
+                />
+              } />
               <Route path="/informors" element={<InformorsManager />} />
               <Route path="/activation" element={<ActivationForm />} />
             </Routes>
