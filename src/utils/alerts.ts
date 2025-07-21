@@ -146,7 +146,7 @@ export const processRecurringTransactions = (transactions: Transaction[]): Trans
       
       if (nextDate <= now) {
         // Criar nova transação recorrente
-        let newDate = new Date(nextDate);
+        let newDate = nextDate;
         
         switch (frequency) {
           case 'monthly':
