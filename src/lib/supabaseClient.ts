@@ -1,13 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Configuração do Supabase
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error(
-    'Variáveis de ambiente do Supabase não encontradas. ' +
-    'Certifique-se de definir VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no arquivo .env.local'
+    '🔧 Configuração do Supabase necessária!\n\n' +
+    'Para conectar ao Supabase, você precisa:\n' +
+    '1. Criar um arquivo .env.local na raiz do projeto\n' +
+    '2. Adicionar suas credenciais do Supabase:\n' +
+    '   VITE_SUPABASE_URL="https://seu-projeto.supabase.co"\n' +
+    '   VITE_SUPABASE_ANON_KEY="sua-chave-anon"\n\n' +
+    'Encontre essas credenciais em: Supabase Dashboard > Project Settings > API'
   );
 }
 
