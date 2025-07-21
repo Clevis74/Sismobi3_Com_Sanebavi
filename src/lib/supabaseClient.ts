@@ -160,6 +160,41 @@ export type Database = {
           created_at?: string;
         };
       };
+      transactions: {
+        Row: {
+          id: string;
+          property_id: string;
+          type: 'income' | 'expense';
+          category: string;
+          amount: number;
+          description: string;
+          date: string;
+          recurring: Json | null; // JSON field
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          property_id: string;
+          type: 'income' | 'expense';
+          category: string;
+          amount: number;
+          description: string;
+          date: string;
+          recurring?: Json | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          property_id?: string;
+          type?: 'income' | 'expense';
+          category?: string;
+          amount?: number;
+          description?: string;
+          date?: string;
+          recurring?: Json | null;
+          created_at?: string;
+        };
+      };
       // Mais tabelas serão adicionadas conforme necessário
     };
     Views: {
