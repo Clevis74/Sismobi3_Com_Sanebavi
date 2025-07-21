@@ -29,7 +29,7 @@ export const TenantManager: React.FC<TenantManagerProps> = ({
   showFinancialValues,
   onAddTenant,
   onUpdateTenant,
-  onDeleteTenant
+  onDeleteTenant,
   onReload
 }) => {
   const { isDemoMode } = useActivation();
