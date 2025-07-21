@@ -1,11 +1,45 @@
 import { Informor } from '../types/informor'
 
-// Simulação de dados para desenvolvimento (substitua por chamadas reais de API)
-const MOCK_INFORMORS: Informor[] = [
+// Chave para armazenamento no localStorage
+const STORAGE_KEY = 'informors-data';
+
+// Dados iniciais para primeira execução
+const INITIAL_INFORMORS: Informor[] = [
   { id: '1', nome: 'Aluguel', valor: 1200, vencimento: '2025-01-10' },
   { id: '2', nome: 'Luz', valor: 250, vencimento: '2025-01-15' },
   { id: '3', nome: 'Água', valor: 180, vencimento: '2025-01-20' }
-]
+];
+
+// Funções auxiliares para localStorage
+const loadFromStorage = (): Informor[] => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Validar se é um array válido
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    }
+  } catch (error) {
+    console.warn('Erro ao carregar Informors do localStorage:', error);
+  }
+  
+  // Se não há dados ou erro, usar dados iniciais e salvar
+  saveToStorage(INITIAL_INFORMORS);
+  return INITIAL_INFORMORS;
+};
+
+const saveToStorage = (informors: Informor[]): void => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(informors));
+  } catch (error) {
+    console.error('Erro ao salvar Informors no localStorage:', error);
+  }
+};
+
+// Array em memória sincronizado com localStorage
+let INFORMORS_DATA: Informor[] = loadFromStorage();
 
 // Simula latência de rede para demonstrar loading states
 const simulateNetworkDelay = (ms: number = 800) => 
@@ -22,12 +56,10 @@ export async function fetchInformors(): Promise<Informor[]> {
     throw new Error('Erro de conexão com o servidor')
   }
   
-  // Em produção, substitua por:
-  // const response = await fetch('https://sua-api.com/informors')
-  // if (!response.ok) throw new Error('Erro ao buscar Informors')
-  // return response.json()
+  // Recarregar dados do localStorage para garantir sincronização
+  INFORMORS_DATA = loadFromStorage();
   
-  return [...MOCK_INFORMORS]
+  return [...INFORMORS_DATA];
 }
 
 /**
@@ -43,20 +75,17 @@ export async function salvarInformor(dados: Omit<Informor, 'id'>): Promise<Infor
   
   const novoInformor: Informor = {
     ...dados,
-    id: Date.now().toString() // Em produção, o ID viria do servidor
+    id: Date.now().toString()
   }
   
-  // Adiciona ao mock local (em produção seria persistido no servidor)
-  MOCK_INFORMORS.push(novoInformor)
+  // Recarregar dados atuais do localStorage
+  INFORMORS_DATA = loadFromStorage();
   
-  // Em produção, substitua por:
-  // const response = await fetch('https://sua-api.com/informors', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(dados)
-  // })
-  // if (!response.ok) throw new Error('Erro ao salvar Informor')
-  // return response.json()
+  // Adicionar novo Informor
+  INFORMORS_DATA.push(novoInformor);
+  
+  // Salvar no localStorage
+  saveToStorage(INFORMORS_DATA);
   
   return novoInformor
 }
@@ -72,19 +101,19 @@ export async function excluirInformor(id: string): Promise<void> {
     throw new Error('Erro ao excluir Informor')
   }
   
-  const index = MOCK_INFORMORS.findIndex(inf => inf.id === id)
+  // Recarregar dados atuais do localStorage
+  INFORMORS_DATA = loadFromStorage();
+  
+  const index = INFORMORS_DATA.findIndex(inf => inf.id === id);
   if (index === -1) {
     throw new Error('Informor não encontrado')
   }
   
-  // Remove do mock local (em produção seria removido do servidor)
-  MOCK_INFORMORS.splice(index, 1)
+  // Remover do array
+  INFORMORS_DATA.splice(index, 1);
   
-  // Em produção, substitua por:
-  // const response = await fetch(`https://sua-api.com/informors/${id}`, {
-  //   method: 'DELETE'
-  // })
-  // if (!response.ok) throw new Error('Erro ao excluir Informor')
+  // Salvar no localStorage
+  saveToStorage(INFORMORS_DATA);
 }
 
 /**
@@ -93,22 +122,65 @@ export async function excluirInformor(id: string): Promise<void> {
 export async function atualizarInformor(id: string, dados: Partial<Omit<Informor, 'id'>>): Promise<Informor> {
   await simulateNetworkDelay(500)
   
-  const index = MOCK_INFORMORS.findIndex(inf => inf.id === id)
+  // Recarregar dados atuais do localStorage
+  INFORMORS_DATA = loadFromStorage();
+  
+  const index = INFORMORS_DATA.findIndex(inf => inf.id === id);
   if (index === -1) {
     throw new Error('Informor não encontrado')
   }
   
-  const informorAtualizado = { ...MOCK_INFORMORS[index], ...dados }
-  MOCK_INFORMORS[index] = informorAtualizado
+  const informorAtualizado = { ...INFORMORS_DATA[index], ...dados };
+  INFORMORS_DATA[index] = informorAtualizado;
   
-  // Em produção, substitua por:
-  // const response = await fetch(`https://sua-api.com/informors/${id}`, {
-  //   method: 'PUT',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(dados)
-  // })
-  // if (!response.ok) throw new Error('Erro ao atualizar Informor')
-  // return response.json()
+  // Salvar no localStorage
+  saveToStorage(INFORMORS_DATA);
   
   return informorAtualizado
+}
+
+/**
+ * Limpa todos os dados (útil para testes ou reset)
+ */
+export async function limparTodosInformors(): Promise<void> {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    INFORMORS_DATA = [];
+  } catch (error) {
+    console.error('Erro ao limpar dados dos Informors:', error);
+    throw new Error('Erro ao limpar dados');
+  }
+}
+
+/**
+ * Exporta todos os dados para backup
+ */
+export async function exportarInformors(): Promise<string> {
+  INFORMORS_DATA = loadFromStorage();
+  return JSON.stringify(INFORMORS_DATA, null, 2);
+}
+
+/**
+ * Importa dados de backup
+ */
+export async function importarInformors(jsonData: string): Promise<void> {
+  try {
+    const dados = JSON.parse(jsonData);
+    if (!Array.isArray(dados)) {
+      throw new Error('Formato de dados inválido');
+    }
+    
+    // Validar estrutura básica dos dados
+    for (const item of dados) {
+      if (!item.id || !item.nome || typeof item.valor !== 'number' || !item.vencimento) {
+        throw new Error('Estrutura de dados inválida');
+      }
+    }
+    
+    INFORMORS_DATA = dados;
+    saveToStorage(INFORMORS_DATA);
+  } catch (error) {
+    console.error('Erro ao importar dados:', error);
+    throw new Error('Erro ao importar dados: ' + (error instanceof Error ? error.message : 'Erro desconhecido'));
+  }
 }

@@ -1,13 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'react-toastify'
 import { Informor } from '../types/informor'
 import { informorSchema } from '../schemas/informorSchema'
 import { 
   fetchInformors, 
   salvarInformor as salvarInformorsService, 
   excluirInformor as excluirInformorsService,
-  atualizarInformor as atualizarInformorsService
+  atualizarInformor as atualizarInformorsService,
+  limparTodosInformors,
+  exportarInformors,
+  importarInformors
 } from '../services/informorsService'
+import { useEnhancedToast } from '../components/UI/EnhancedToast'
 
 // Chaves para o cache do React Query
 const QUERY_KEYS = {
@@ -16,6 +19,7 @@ const QUERY_KEYS = {
 
 export function useInformors() {
   const queryClient = useQueryClient()
+  const toast = useEnhancedToast()
 
   // Query para buscar todos os Informors
   const {
@@ -26,7 +30,7 @@ export function useInformors() {
   } = useQuery({
     queryKey: QUERY_KEYS.informors,
     queryFn: fetchInformors,
-    onError: (error: Error) => {
+    onError: (error: any) => {
       console.error('Erro ao carregar Informors:', error)
       toast.error(`Erro ao carregar dados: ${error.message}`)
     }
@@ -47,7 +51,7 @@ export function useInformors() {
       
       toast.success(`Informor "${novoInformor.nome}" salvo com sucesso!`)
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       console.error('Erro ao salvar Informor:', error)
       toast.error(`Erro ao salvar: ${error.message}`)
     }
@@ -65,7 +69,7 @@ export function useInformors() {
       const informorExcluido = informors.find(inf => inf.id === idExcluido)
       toast.success(`Informor "${informorExcluido?.nome || 'desconhecido'}" excluído com sucesso!`)
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       console.error('Erro ao excluir Informor:', error)
       toast.error(`Erro ao excluir: ${error.message}`)
     }
@@ -83,11 +87,37 @@ export function useInformors() {
       
       toast.success(`Informor "${informorAtualizado.nome}" atualizado com sucesso!`)
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       console.error('Erro ao atualizar Informor:', error)
       toast.error(`Erro ao atualizar: ${error.message}`)
     }
   })
+
+  // Mutation para limpar todos os dados
+  const limparMutation = useMutation({
+    mutationFn: limparTodosInformors,
+    onSuccess: () => {
+      queryClient.setQueryData(QUERY_KEYS.informors, []);
+      toast.success('Todos os Informors foram removidos!');
+    },
+    onError: (error: any) => {
+      console.error('Erro ao limpar Informors:', error);
+      toast.error(`Erro ao limpar dados: ${error.message}`);
+    }
+  });
+
+  // Mutation para importar dados
+  const importarMutation = useMutation({
+    mutationFn: importarInformors,
+    onSuccess: () => {
+      queryClient.invalidateQueries(QUERY_KEYS.informors);
+      toast.success('Dados importados com sucesso!');
+    },
+    onError: (error: any) => {
+      console.error('Erro ao importar dados:', error);
+      toast.error(`Erro ao importar: ${error.message}`);
+    }
+  });
 
   // Função para salvar novo Informor com validação
   const salvarInformor = async (novo: Omit<Informor, 'id'>): Promise<boolean> => {
@@ -137,6 +167,36 @@ export function useInformors() {
     refetch()
   }
 
+  // Função para limpar todos os dados
+  const limparTodos = async (): Promise<boolean> => {
+    try {
+      await limparMutation.mutateAsync();
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  // Função para exportar dados
+  const exportarDados = async (): Promise<string | null> => {
+    try {
+      return await exportarInformors();
+    } catch (error) {
+      toast.error('Erro ao exportar dados');
+      return null;
+    }
+  };
+
+  // Função para importar dados
+  const importarDados = async (jsonData: string): Promise<boolean> => {
+    try {
+      await importarMutation.mutateAsync(jsonData);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
   return {
     // Dados
     informors,
@@ -147,6 +207,8 @@ export function useInformors() {
     carregandoSalvar: salvarMutation.isLoading,
     carregandoExcluir: excluirMutation.isLoading,
     carregandoAtualizar: atualizarMutation.isLoading,
+    carregandoLimpar: limparMutation.isLoading,
+    carregandoImportar: importarMutation.isLoading,
     
     // Estados de erro
     erro: error,
@@ -156,6 +218,9 @@ export function useInformors() {
     excluirInformor,
     atualizarInformor,
     recarregarDados,
+    limparTodos,
+    exportarDados,
+    importarDados,
     
     // Informações adicionais
     temDados: informors.length > 0,
