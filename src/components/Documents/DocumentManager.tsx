@@ -232,7 +232,8 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
   const documentTypes = [...new Set(documents.map(d => d.type))];
 
   return (
-    <div className="space-y-6">
+    <>
+      <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Gestão de Documentos</h2>
@@ -476,6 +477,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
       )}
     </div>
     
-    {ConfirmationModalComponent}
+      {ConfirmationModalComponent}
+    </>
   );
 };
