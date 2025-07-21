@@ -41,6 +41,7 @@ function AppContent() {
   const [showFinancialValues, setShowFinancialValues] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [supabaseAvailable, setSupabaseAvailable] = useState(false);
+  const [importLoading, setImportLoading] = useState(false);
 
   // Verificar disponibilidade do Supabase
   React.useEffect(() => {
