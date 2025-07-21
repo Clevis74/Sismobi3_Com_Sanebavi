@@ -4,20 +4,15 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    '🔧 Configuração do Supabase necessária!\n\n' +
-    'Para conectar ao Supabase, você precisa:\n' +
-    '1. Criar um arquivo .env.local na raiz do projeto\n' +
-    '2. Adicionar suas credenciais do Supabase:\n' +
-    '   VITE_SUPABASE_URL="https://seu-projeto.supabase.co"\n' +
-    '   VITE_SUPABASE_ANON_KEY="sua-chave-anon"\n\n' +
-    'Encontre essas credenciais em: Supabase Dashboard > Project Settings > API'
-  );
-}
+// Usar valores padrão se as variáveis não estiverem configuradas
+const defaultUrl = 'https://placeholder.supabase.co';
+const defaultKey = 'placeholder-key';
+
+const finalUrl = supabaseUrl && !supabaseUrl.includes('your-project-ref') ? supabaseUrl : defaultUrl;
+const finalKey = supabaseAnonKey && !supabaseAnonKey.includes('your-anon-key') ? supabaseAnonKey : defaultKey;
 
 // Criar cliente Supabase
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient(finalUrl, finalKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
@@ -334,10 +329,11 @@ export const signOut = async () => {
 // Helper para verificar conexão com Supabase
 export const testConnection = async () => {
   try {
-    // Verificar se as variáveis de ambiente estão configuradas
+    // Verificar se as variáveis de ambiente estão configuradas corretamente
     if (!supabaseUrl || !supabaseAnonKey || 
         supabaseUrl.includes('your-project-ref') || 
-        supabaseAnonKey.includes('your-anon-key')) {
+        supabaseAnonKey.includes('your-anon-key') ||
+        finalUrl === defaultUrl || finalKey === defaultKey) {
       console.warn('Supabase não configurado - usando modo offline');
       return false;
     }
