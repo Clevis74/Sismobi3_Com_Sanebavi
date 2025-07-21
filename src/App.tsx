@@ -7,6 +7,7 @@ import { useTenants } from './hooks/useTenants';
 import { useTransactions } from './hooks/useTransactions';
 import { useDocuments } from './hooks/useDocuments';
 import { useEnergyBills } from './hooks/useEnergyBills';
+import { useWaterBills } from './hooks/useWaterBills';
 import { useSyncManager } from './hooks/useSyncManager';
 import { ActivationProvider } from './contexts/ActivationContext';
 import { useEnhancedToast } from './components/UI/EnhancedToast';
@@ -28,7 +29,7 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 import { calculateFinancialSummary } from './utils/calculations';
 import { generateAutomaticAlerts, processRecurringTransactions } from './utils/alerts';
 import { createBackup, exportBackup, importBackup, validateBackup, BackupData } from './utils/dataBackup';
-import { Tenant, Alert, EnergyBill, WaterBill } from './types';
+import { Tenant, Alert, EnergyBill } from './types';
 
 // Configuração do cliente do TanStack Query
 const queryClient = new QueryClient({
@@ -53,7 +54,6 @@ function AppContent() {
   const { syncStatus } = useSyncManager();
   
   const [alerts, setAlerts] = useLocalStorage<Alert[]>('alerts', []);
-  const [waterBills, setWaterBills] = useLocalStorage<WaterBill[]>('waterBills', []);
   const [showFinancialValues, setShowFinancialValues] = useLocalStorage<boolean>('showFinancialValues', true);
   const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('theme', 'light');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -122,6 +122,17 @@ function AppContent() {
     recarregarDados: recarregarEnergyBills
   } = useEnergyBills(supabaseAvailable);
 
+  // Hook para gerenciar contas de água (com fallback para localStorage)
+  const {
+    waterBills,
+    carregando: carregandoWaterBills,
+    erro: erroWaterBills,
+    addWaterBill,
+    updateWaterBill,
+    deleteWaterBill,
+    recarregarDados: recarregarWaterBills
+  } = useWaterBills(supabaseAvailable);
+
   // Listener para navegação para ativação
   useEffect(() => {
     const handleNavigateToActivation = () => {
@@ -176,29 +187,6 @@ function AppContent() {
     setAlerts(prev => prev.filter(a => a.id !== id));
   };
 
-  // Funções para gerenciar contas de água
-  const addWaterBill = (billData: Omit<WaterBill, 'id' | 'createdAt' | 'lastUpdated'>) => {
-    const newBill: WaterBill = {
-      ...billData,
-      id: Date.now().toString(),
-      createdAt: new Date(),
-      lastUpdated: new Date()
-    };
-    setWaterBills(prev => [...prev, newBill]);
-  };
-
-  const updateWaterBill = (id: string, updates: Partial<WaterBill>) => {
-    setWaterBills(prev => prev.map(bill => 
-      bill.id === id 
-        ? { ...bill, ...updates, lastUpdated: new Date() }
-        : bill
-    ));
-  };
-
-  const deleteWaterBill = (id: string) => {
-    setWaterBills(prev => prev.filter(bill => bill.id !== id));
-  };
-
   // Funções para backup
   const handleExport = () => {
     const backup = createBackup(properties, tenants, transactions, alerts, documents, energyBills, waterBills);
@@ -222,9 +210,7 @@ function AppContent() {
               addTransaction(transaction);
             });
             setAlerts(backupData.alerts);
-            setDocuments(backupData.documents || []);
-            setEnergyBills(backupData.energyBills || []);
-            setWaterBills(backupData.waterBills || []);
+            // TODO: Implementar importação para documents, energyBills e waterBills usando os hooks
             alert('Backup importado com sucesso!');
           } else {
             alert('Arquivo de backup inválido!');
@@ -340,11 +326,14 @@ function AppContent() {
         return (
           <SanebaviManager
             waterBills={waterBills}
+            loading={carregandoWaterBills}
+            error={erroWaterBills}
             properties={properties}
             showFinancialValues={showFinancialValues}
             onAddWaterBill={addWaterBill}
             onUpdateWaterBill={updateWaterBill}
             onDeleteWaterBill={deleteWaterBill}
+            onReload={recarregarWaterBills}
           />
         );
       case 'informors':
