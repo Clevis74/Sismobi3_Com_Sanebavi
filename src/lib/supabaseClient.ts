@@ -247,6 +247,44 @@ export type Database = {
           created_at?: string;
         };
       };
+      water_bills: {
+        Row: {
+          id: string;
+          date: string;
+          observations: string | null;
+          is_paid: boolean;
+          created_at: string;
+          last_updated: string;
+          group_id: string;
+          group_name: string;
+          total_group_value: number;
+          properties_in_group: Json; // Stores SharedWaterConsumption[]
+        };
+        Insert: {
+          id?: string;
+          date: string;
+          observations?: string | null;
+          is_paid?: boolean;
+          created_at?: string;
+          last_updated?: string;
+          group_id: string;
+          group_name: string;
+          total_group_value: number;
+          properties_in_group: Json;
+        };
+        Update: {
+          id?: string;
+          date?: string;
+          observations?: string | null;
+          is_paid?: boolean;
+          created_at?: string;
+          last_updated?: string;
+          group_id?: string;
+          group_name?: string;
+          total_group_value?: number;
+          properties_in_group?: Json;
+        };
+      };
       // Mais tabelas serão adicionadas conforme necessário
     };
     Views: {
