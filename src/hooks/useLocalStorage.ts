@@ -37,14 +37,40 @@ function processStoredData(data: any): any {
   return data;
 }
 
+// Helper function to sync tenant data with properties in localStorage
+function syncTenantWithProperties(properties: any[], tenants: any[]): any[] {
+  return properties.map(property => {
+    // Find the tenant for this property
+    const tenant = tenants.find(t => t.propertyId === property.id && t.status === 'active');
+    
+    return {
+      ...property,
+      tenant: tenant || undefined
+    };
+  });
+}
 export function useLocalStorage<T>(key: string, initialValue: T) {
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {
       const item = window.localStorage.getItem(key);
       if (item) {
         const parsed = JSON.parse(item);
-        // Process the parsed data to convert date strings back to Date objects
-        return processStoredData(parsed);
+        let processed = processStoredData(parsed);
+        
+        // Special handling for properties to sync with tenants
+        if (key === 'properties') {
+          try {
+            const tenantsItem = window.localStorage.getItem('tenants');
+            if (tenantsItem) {
+              const tenants = processStoredData(JSON.parse(tenantsItem));
+              processed = syncTenantWithProperties(processed, tenants);
+            }
+          } catch (error) {
+            console.warn('Erro ao sincronizar inquilinos com propriedades:', error);
+          }
+        }
+        
+        return processed;
       }
       return initialValue;
     } catch (error) {
@@ -58,6 +84,20 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
       const valueToStore = value instanceof Function ? value(storedValue) : value;
       setStoredValue(valueToStore);
       window.localStorage.setItem(key, JSON.stringify(valueToStore));
+       
+       // Special handling: when tenants are updated, also update properties to sync the relationship
+       if (key === 'tenants') {
+         try {
+           const propertiesItem = window.localStorage.getItem('properties');
+           if (propertiesItem) {
+             const properties = processStoredData(JSON.parse(propertiesItem));
+             const syncedProperties = syncTenantWithProperties(properties, valueToStore as any);
+             window.localStorage.setItem('properties', JSON.stringify(syncedProperties));
+           }
+         } catch (error) {
+           console.warn('Erro ao sincronizar propriedades com inquilinos:', error);
+         }
+       }
     } catch (error) {
       console.error(`Error setting localStorage key "${key}":`, error);
     }

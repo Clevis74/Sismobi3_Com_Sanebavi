@@ -192,6 +192,9 @@ export function useTenants(supabaseAvailable: boolean = false) {
         old.filter(tenant => tenant.id !== deletedId)
       );
       
+      // Invalidar cache de propriedades para atualizar o relacionamento
+      queryClient.invalidateQueries(['properties']);
+      
       const deletedTenant = tenants.find(t => t.id === deletedId);
       toast.success(`Inquilino "${deletedTenant?.name || 'desconhecido'}" excluído com sucesso!`);
     },
