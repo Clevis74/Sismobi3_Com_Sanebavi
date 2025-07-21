@@ -280,6 +280,83 @@ export const informorService = {
   }
 };
 
+// Serviços para Documents
+export const documentService = {
+  // Buscar todos os documentos
+  async getAll() {
+    const { data, error } = await supabase
+      .from('documents')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Criar novo documento
+  async create(document: Omit<Document, 'id' | 'lastUpdated'>) {
+    const { data, error } = await supabase
+      .from('documents')
+      .insert({
+        type: document.type,
+        issue_date: document.issueDate.toISOString(),
+        has_validity: document.hasValidity,
+        validity_date: document.validityDate?.toISOString() || null,
+        file_name: document.fileName || null,
+        file_url: document.fileUrl || null,
+        observations: document.observations || null,
+        property_id: document.propertyId,
+        tenant_id: document.tenantId || null,
+        status: document.status,
+        contract_signed: document.contractSigned
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Atualizar documento
+  async update(id: string, updates: Partial<Document>) {
+    const updateData: any = {};
+    
+    if (updates.type) updateData.type = updates.type;
+    if (updates.issueDate) updateData.issue_date = updates.issueDate.toISOString();
+    if (updates.hasValidity !== undefined) updateData.has_validity = updates.hasValidity;
+    if (updates.validityDate !== undefined) {
+      updateData.validity_date = updates.validityDate?.toISOString() || null;
+    }
+    if (updates.fileName !== undefined) updateData.file_name = updates.fileName;
+    if (updates.fileUrl !== undefined) updateData.file_url = updates.fileUrl;
+    if (updates.observations !== undefined) updateData.observations = updates.observations;
+    if (updates.propertyId) updateData.property_id = updates.propertyId;
+    if (updates.tenantId !== undefined) updateData.tenant_id = updates.tenantId;
+    if (updates.status) updateData.status = updates.status;
+    if (updates.contractSigned !== undefined) updateData.contract_signed = updates.contractSigned;
+
+    const { data, error } = await supabase
+      .from('documents')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Deletar documento
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('documents')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  }
+};
+
 // Utilitário para converter dados do Supabase para o formato da aplicação
 export const mappers = {
   // Converter propriedade do Supabase para o formato da aplicação
@@ -340,6 +417,25 @@ export const mappers = {
       nome: data.nome,
       valor: data.valor,
       vencimento: data.vencimento
+    };
+  },
+
+  // Converter documento do Supabase para o formato da aplicação
+  documentFromSupabase(data: any): Document {
+    return {
+      id: data.id,
+      type: data.type,
+      issueDate: new Date(data.issue_date),
+      hasValidity: data.has_validity,
+      validityDate: data.validity_date ? new Date(data.validity_date) : undefined,
+      fileName: data.file_name,
+      fileUrl: data.file_url,
+      observations: data.observations || '',
+      propertyId: data.property_id,
+      tenantId: data.tenant_id,
+      status: data.status,
+      contractSigned: data.contract_signed,
+      lastUpdated: new Date(data.last_updated)
     };
   }
 };

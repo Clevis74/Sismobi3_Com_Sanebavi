@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useProperties } from './hooks/useProperties';
 import { useTenants } from './hooks/useTenants';
 import { useTransactions } from './hooks/useTransactions';
+import { useDocuments } from './hooks/useDocuments';
 import { useSyncManager } from './hooks/useSyncManager';
 import { ActivationProvider } from './contexts/ActivationContext';
 import { useEnhancedToast } from './components/UI/EnhancedToast';
@@ -26,7 +27,7 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 import { calculateFinancialSummary } from './utils/calculations';
 import { generateAutomaticAlerts, processRecurringTransactions } from './utils/alerts';
 import { createBackup, exportBackup, importBackup, validateBackup, BackupData } from './utils/dataBackup';
-import { Tenant, Alert, Document, EnergyBill, WaterBill } from './types';
+import { Tenant, Alert, EnergyBill, WaterBill } from './types';
 
 // Configuração do cliente do TanStack Query
 const queryClient = new QueryClient({
@@ -51,7 +52,6 @@ function AppContent() {
   const { syncStatus } = useSyncManager();
   
   const [alerts, setAlerts] = useLocalStorage<Alert[]>('alerts', []);
-  const [documents, setDocuments] = useLocalStorage<Document[]>('documents', []);
   const [energyBills, setEnergyBills] = useLocalStorage<EnergyBill[]>('energyBills', []);
   const [waterBills, setWaterBills] = useLocalStorage<WaterBill[]>('waterBills', []);
   const [showFinancialValues, setShowFinancialValues] = useLocalStorage<boolean>('showFinancialValues', true);
@@ -99,6 +99,17 @@ function AppContent() {
     deleteTransaction,
     recarregarDados: recarregarTransactions
   } = useTransactions(supabaseAvailable);
+
+  // Hook para gerenciar documentos (com fallback para localStorage)
+  const {
+    documents,
+    carregando: carregandoDocuments,
+    erro: erroDocuments,
+    addDocument,
+    updateDocument,
+    deleteDocument,
+    recarregarDados: recarregarDocuments
+  } = useDocuments(supabaseAvailable);
 
   // Listener para navegação para ativação
   useEffect(() => {
@@ -152,28 +163,6 @@ function AppContent() {
 
   const deleteAlert = (id: string) => {
     setAlerts(prev => prev.filter(a => a.id !== id));
-  };
-
-  // Funções para gerenciar documentos
-  const addDocument = (documentData: Omit<Document, 'id' | 'lastUpdated'>) => {
-    const newDocument: Document = {
-      ...documentData,
-      id: Date.now().toString(),
-      lastUpdated: new Date()
-    };
-    setDocuments(prev => [...prev, newDocument]);
-  };
-
-  const updateDocument = (id: string, updates: Partial<Document>) => {
-    setDocuments(prev => prev.map(d => 
-      d.id === id 
-        ? { ...d, ...updates, lastUpdated: new Date() }
-        : d
-    ));
-  };
-
-  const deleteDocument = (id: string) => {
-    setDocuments(prev => prev.filter(d => d.id !== id));
   };
 
   // Funções para gerenciar contas de energia
@@ -335,11 +324,14 @@ function AppContent() {
         return (
           <DocumentManager
             documents={documents}
+            loading={carregandoDocuments}
+            error={erroDocuments}
             properties={properties}
             tenants={tenants}
             onAddDocument={addDocument}
             onUpdateDocument={updateDocument}
             onDeleteDocument={deleteDocument}
+            onReload={recarregarDocuments}
           />
         );
       case 'energy':

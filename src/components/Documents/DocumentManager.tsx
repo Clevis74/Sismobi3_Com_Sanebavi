@@ -9,29 +9,38 @@ import { HighlightCard, AnimatedListItem } from '../UI/HighlightCard';
 
 interface DocumentManagerProps {
   documents: Document[];
+  loading?: boolean;
+  error?: Error | null;
   properties: Property[];
   tenants: Tenant[];
-  onAddDocument: (document: Omit<Document, 'id' | 'lastUpdated'>) => void;
-  onUpdateDocument: (id: string, document: Partial<Document>) => void;
-  onDeleteDocument: (id: string) => void;
+  onAddDocument: (document: Omit<Document, 'id' | 'lastUpdated'>) => Promise<boolean>;
+  onUpdateDocument: (id: string, document: Partial<Document>) => Promise<boolean>;
+  onDeleteDocument: (id: string) => Promise<boolean>;
+  onReload?: () => void;
 }
 
 export const DocumentManager: React.FC<DocumentManagerProps> = ({
   documents,
+  loading: externalLoading = false,
+  error: externalError = null,
   properties,
   tenants,
   onAddDocument,
   onUpdateDocument,
-  onDeleteDocument
+  onDeleteDocument,
+  onReload
 }) => {
   const { isDemoMode } = useActivation();
   const [showForm, setShowForm] = useState(false);
   const [editingDocument, setEditingDocument] = useState<Document | null>(null);
   const [filter, setFilter] = useState<'all' | 'valid' | 'expired' | 'pending'>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [loading, setLoading] = useState(false);
+  const [internalLoading, setInternalLoading] = useState(false);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [newItemId, setNewItemId] = useState<string | null>(null);
+
+  const { showConfirmation, ConfirmationModalComponent } = useConfirmationModal();
+  const toast = useEnhancedToast();
 
   // Configurações do modo DEMO
   const DEMO_LIMITS = {
@@ -39,12 +48,115 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
   };
 
   const isAtDemoLimit = isDemoMode && documents.length >= DEMO_LIMITS.maxDocuments;
+  
+  // Combinar estados de loading
+  const loading = externalLoading || internalLoading;
 
-  const handleAddDocument = (documentData: Omit<Document, 'id' | 'lastUpdated'>) => {
+  const handleAddDocument = async (documentData: Omit<Document, 'id' | 'lastUpdated'>) => {
+    if (isAtDemoLimit) {
+      toast.demoLimit('documentos', DEMO_LIMITS.maxDocuments);
+      return; // Não permite adicionar se estiver no limite do demo
+    }
+    setInternalLoading(true);
+    
+    try {
+      const success = await onAddDocument(documentData);
+      if (success) {
+        setShowForm(false);
+        
+        // Destacar o novo item (será o primeiro da lista após a criação)
+        setTimeout(() => {
+          const newestDocument = documents[0];
+          if (newestDocument) {
+            setHighlightedId(newestDocument.id);
+            setNewItemId(newestDocument.id);
+            
+            // Limpar destaque após 3 segundos
+            setTimeout(() => setHighlightedId(null), 3000);
+            setTimeout(() => setNewItemId(null), 1000);
+          }
+        }, 100);
+      }
+    } finally {
+      setInternalLoading(false);
+    }
+  };
+
+  // Mostrar erro se houver
+  if (externalError) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-gray-900">Gestão de Documentos</h2>
+          {onReload && (
+            <LoadingButton
+              loading={loading}
+              onClick={onReload}
+              variant="secondary"
+            >
+              Tentar Novamente
+            </LoadingButton>
+          )}
+        </div>
+        
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 flex items-center space-x-3">
+          <div className="w-6 h-6 text-red-600 flex-shrink-0">⚠️</div>
+          <div>
+            <h3 className="text-red-800 font-medium">Erro ao carregar documentos</h3>
+            <p className="text-red-600 text-sm mt-1">
+              {externalError instanceof Error ? externalError.message : 'Erro desconhecido'}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const handleEditDocument = (document: Document) => {
+    setEditingDocument(document);
+    setShowForm(true);
+  };
+
+  const handleUpdateDocument = async (documentData: Omit<Document, 'id' | 'lastUpdated'>) => {
+    if (editingDocument) {
+      setInternalLoading(true);
+      
+      try {
+        const success = await onUpdateDocument(editingDocument.id, documentData);
+        if (success) {
+          setEditingDocument(null);
+          setShowForm(false);
+          
+          // Destacar o item editado
+          setHighlightedId(editingDocument.id);
+          setTimeout(() => setHighlightedId(null), 3000);
+        }
+      } finally {
+        setInternalLoading(false);
+      }
+    }
+  };
+
+  const handleDeleteDocument = (document: Document) => {
+    showConfirmation({
+      title: 'Excluir Documento',
+      message: `Tem certeza que deseja excluir o documento "${document.type}"? Esta ação não pode ser desfeita.`,
+      confirmText: 'Excluir',
+      type: 'danger',
+      onConfirm: async () => {
+        const success = await onDeleteDocument(document.id);
+        if (success) {
+          toast.deleted('Documento');
+        }
+      }
+    });
+  };
+
+  const handleAddDocument_old = (documentData: Omit<Document, 'id' | 'lastUpdated'>) => {
     if (isAtDemoLimit) {
       return; // Não permite adicionar se estiver no limite do demo
     }
-    setLoading(true);
+    setInternalLoading(true);
     
     // Simular operação assíncrona
     setTimeout(() => {
@@ -56,7 +168,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
       
       onAddDocument(documentData);
       setShowForm(false);
-      setLoading(false);
+      setInternalLoading(false);
       
       // Destacar o novo item
       setHighlightedId(newDocument.id);
@@ -68,21 +180,16 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
     }, 800);
   };
 
-  const handleEditDocument = (document: Document) => {
-    setEditingDocument(document);
-    setShowForm(true);
-  };
-
-  const handleUpdateDocument = (documentData: Omit<Document, 'id' | 'lastUpdated'>) => {
+  const handleUpdateDocument_old = (documentData: Omit<Document, 'id' | 'lastUpdated'>) => {
     if (editingDocument) {
-      setLoading(true);
+      setInternalLoading(true);
       
       // Simular operação assíncrona
       setTimeout(() => {
         onUpdateDocument(editingDocument.id, documentData);
         setEditingDocument(null);
         setShowForm(false);
-        setLoading(false);
+        setInternalLoading(false);
         
         // Destacar o item editado
         setHighlightedId(editingDocument.id);
@@ -135,11 +242,27 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
             </p>
           ) : (
             <p className="text-gray-600 mt-1">
-              {documents.length} documento{documents.length !== 1 ? 's' : ''} cadastrado{documents.length !== 1 ? 's' : ''}
+              {loading && documents.length === 0 ? (
+                <span className="flex items-center space-x-2">
+                  <div className="w-4 h-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+                  <span>Carregando documentos...</span>
+                </span>
+              ) : (
+                `${documents.length} documento{documents.length !== 1 ? 's' : ''} cadastrado{documents.length !== 1 ? 's' : ''}`
+              )}
             </p>
           )}
         </div>
         <div className="flex flex-col items-end space-y-2">
+          {onReload && (
+            <LoadingButton
+              loading={loading}
+              onClick={onReload}
+              variant="secondary"
+            >
+              Recarregar
+            </LoadingButton>
+          )}
           <LoadingButton
             loading={loading}
             onClick={() => setShowForm(true)}
@@ -266,7 +389,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => onDeleteDocument(document.id)}
+                      onClick={() => handleDeleteDocument(document)}
                       disabled={loading}
                       className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                     >
@@ -352,5 +475,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
         </div>
       )}
     </div>
+    
+    {ConfirmationModalComponent}
   );
 };
