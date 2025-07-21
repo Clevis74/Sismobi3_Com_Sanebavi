@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import { Tenant } from '../types';
 import { useLocalStorage } from './useLocalStorage';
 import { tenantService, mappers } from '../services/supabaseService';
+import { useSyncManager } from './useSyncManager';
 
 // Chaves para o cache do React Query
 const QUERY_KEYS = {
@@ -11,6 +12,7 @@ const QUERY_KEYS = {
 
 export function useTenants(supabaseAvailable: boolean = false) {
   const queryClient = useQueryClient();
+  const { addPendingChange } = useSyncManager();
   
   // Fallback para localStorage quando Supabase não está disponível
   const [localTenants, setLocalTenants] = useLocalStorage<Tenant[]>('tenants', []);
@@ -50,6 +52,14 @@ export function useTenants(supabaseAvailable: boolean = false) {
           id: Date.now().toString()
         };
         setLocalTenants(prev => [newTenant, ...prev]);
+        
+        // Adicionar à fila de sincronização
+        addPendingChange({
+          type: 'create',
+          entity: 'tenants',
+          data: newTenant
+        });
+        
         return newTenant;
       }
       try {
@@ -62,6 +72,14 @@ export function useTenants(supabaseAvailable: boolean = false) {
           id: Date.now().toString()
         };
         setLocalTenants(prev => [newTenant, ...prev]);
+        
+        // Adicionar à fila de sincronização
+        addPendingChange({
+          type: 'create',
+          entity: 'tenants',
+          data: newTenant
+        });
+        
         return newTenant;
       }
     },
@@ -87,6 +105,14 @@ export function useTenants(supabaseAvailable: boolean = false) {
         // Usar localStorage se Supabase não estiver disponível
         const updatedTenant = { ...tenants.find(t => t.id === id), ...updates } as Tenant;
         setLocalTenants(prev => prev.map(t => t.id === id ? updatedTenant : t));
+        
+        // Adicionar à fila de sincronização
+        addPendingChange({
+          type: 'update',
+          entity: 'tenants',
+          data: updatedTenant
+        });
+        
         return updatedTenant;
       }
       try {
@@ -96,6 +122,14 @@ export function useTenants(supabaseAvailable: boolean = false) {
         // Fallback para localStorage
         const updatedTenant = { ...tenants.find(t => t.id === id), ...updates } as Tenant;
         setLocalTenants(prev => prev.map(t => t.id === id ? updatedTenant : t));
+        
+        // Adicionar à fila de sincronização
+        addPendingChange({
+          type: 'update',
+          entity: 'tenants',
+          data: updatedTenant
+        });
+        
         return updatedTenant;
       }
     },
@@ -120,14 +154,35 @@ export function useTenants(supabaseAvailable: boolean = false) {
     mutationFn: async (id: string) => {
       if (!supabaseAvailable) {
         // Usar localStorage se Supabase não estiver disponível
+        const tenantToDelete = tenants.find(t => t.id === id);
         setLocalTenants(prev => prev.filter(t => t.id !== id));
+        
+        // Adicionar à fila de sincronização
+        if (tenantToDelete) {
+          addPendingChange({
+            type: 'delete',
+            entity: 'tenants',
+            data: { id: tenantToDelete.id }
+          });
+        }
+        
         return id;
       }
       try {
         await tenantService.delete(id);
       } catch (error) {
         // Fallback para localStorage
+        const tenantToDelete = tenants.find(t => t.id === id);
         setLocalTenants(prev => prev.filter(t => t.id !== id));
+        
+        // Adicionar à fila de sincronização
+        if (tenantToDelete) {
+          addPendingChange({
+            type: 'delete',
+            entity: 'tenants',
+            data: { id: tenantToDelete.id }
+          });
+        }
       }
       return id;
     },

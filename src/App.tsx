@@ -4,6 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useProperties } from './hooks/useProperties';
 import { useTenants } from './hooks/useTenants';
+import { useSyncManager } from './hooks/useSyncManager';
 import { ActivationProvider } from './contexts/ActivationContext';
 import { useEnhancedToast } from './components/UI/EnhancedToast';
 import { testConnection } from './lib/supabaseClient';
@@ -44,6 +45,10 @@ const queryClient = new QueryClient({
 function AppContent() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [supabaseAvailable, setSupabaseAvailable] = useState(false);
+  
+  // Inicializar o gerenciador de sincronização
+  const { syncStatus } = useSyncManager();
+  
   const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', []);
   const [alerts, setAlerts] = useLocalStorage<Alert[]>('alerts', []);
   const [documents, setDocuments] = useLocalStorage<Document[]>('documents', []);

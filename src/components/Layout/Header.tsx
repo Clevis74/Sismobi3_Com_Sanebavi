@@ -1,6 +1,7 @@
 import React from 'react';
 import { Calendar, Download, Upload, Eye, EyeOff } from 'lucide-react';
 import { useActivation } from '../../contexts/ActivationContext';
+import { SyncIndicator } from './SyncIndicator';
 
 interface HeaderProps {
   showFinancialValues: boolean;
@@ -34,6 +35,7 @@ export const Header: React.FC<HeaderProps> = ({
             <Calendar className="w-5 h-5 mr-2" />
             <span className="capitalize">{currentDate}</span>
           </div>
+          <SyncIndicator />
         </div>
         
         <div className="flex items-center space-x-4">

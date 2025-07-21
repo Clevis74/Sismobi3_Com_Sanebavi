@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import { Property } from '../types';
 import { useLocalStorage } from './useLocalStorage';
 import { propertyService, mappers } from '../services/supabaseService';
+import { useSyncManager } from './useSyncManager';
 
 // Chaves para o cache do React Query
 const QUERY_KEYS = {
@@ -11,6 +12,7 @@ const QUERY_KEYS = {
 
 export function useProperties(supabaseAvailable: boolean = false) {
   const queryClient = useQueryClient();
+  const { addPendingChange } = useSyncManager();
   
   // Fallback para localStorage quando Supabase não está disponível
   const [localProperties, setLocalProperties] = useLocalStorage<Property[]>('properties', []);
@@ -51,6 +53,14 @@ export function useProperties(supabaseAvailable: boolean = false) {
           createdAt: new Date()
         };
         setLocalProperties(prev => [newProperty, ...prev]);
+        
+        // Adicionar à fila de sincronização
+        addPendingChange({
+          type: 'create',
+          entity: 'properties',
+          data: newProperty
+        });
+        
         return newProperty;
       }
       try {
@@ -64,6 +74,14 @@ export function useProperties(supabaseAvailable: boolean = false) {
           createdAt: new Date()
         };
         setLocalProperties(prev => [newProperty, ...prev]);
+        
+        // Adicionar à fila de sincronização
+        addPendingChange({
+          type: 'create',
+          entity: 'properties',
+          data: newProperty
+        });
+        
         return newProperty;
       }
     },
@@ -92,6 +110,14 @@ export function useProperties(supabaseAvailable: boolean = false) {
         // Usar localStorage se Supabase não estiver disponível
         const updatedProperty = { ...properties.find(p => p.id === id), ...updates } as Property;
         setLocalProperties(prev => prev.map(p => p.id === id ? updatedProperty : p));
+        
+        // Adicionar à fila de sincronização
+        addPendingChange({
+          type: 'update',
+          entity: 'properties',
+          data: updatedProperty
+        });
+        
         return updatedProperty;
       }
       try {
@@ -101,6 +127,14 @@ export function useProperties(supabaseAvailable: boolean = false) {
         // Fallback para localStorage
         const updatedProperty = { ...properties.find(p => p.id === id), ...updates } as Property;
         setLocalProperties(prev => prev.map(p => p.id === id ? updatedProperty : p));
+        
+        // Adicionar à fila de sincronização
+        addPendingChange({
+          type: 'update',
+          entity: 'properties',
+          data: updatedProperty
+        });
+        
         return updatedProperty;
       }
     },
@@ -125,14 +159,35 @@ export function useProperties(supabaseAvailable: boolean = false) {
     mutationFn: async (id: string) => {
       if (!supabaseAvailable) {
         // Usar localStorage se Supabase não estiver disponível
+        const propertyToDelete = properties.find(p => p.id === id);
         setLocalProperties(prev => prev.filter(p => p.id !== id));
+        
+        // Adicionar à fila de sincronização
+        if (propertyToDelete) {
+          addPendingChange({
+            type: 'delete',
+            entity: 'properties',
+            data: { id: propertyToDelete.id }
+          });
+        }
+        
         return id;
       }
       try {
         await propertyService.delete(id);
       } catch (error) {
         // Fallback para localStorage
+        const propertyToDelete = properties.find(p => p.id === id);
         setLocalProperties(prev => prev.filter(p => p.id !== id));
+        
+        // Adicionar à fila de sincronização
+        if (propertyToDelete) {
+          addPendingChange({
+            type: 'delete',
+            entity: 'properties',
+            data: { id: propertyToDelete.id }
+          });
+        }
       }
       return id;
     },
