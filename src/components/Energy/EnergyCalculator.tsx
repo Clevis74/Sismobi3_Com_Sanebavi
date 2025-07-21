@@ -37,7 +37,7 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
   showFinancialValues,
   onAddEnergyBill,
   onUpdateEnergyBill,
-  onDeleteEnergyBill
+  onDeleteEnergyBill,
  onReload
 }) => {
   const { isDemoMode } = useActivation();
