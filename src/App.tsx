@@ -243,6 +243,18 @@ function AppContent() {
             </Routes>
           </div>
         </main>
+        
+        {/* Loading overlay para importação */}
+        {importLoading && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 flex items-center space-x-3">
+              <div className="w-6 h-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+              <span className="text-gray-700 font-medium">Importando backup...</span>
+            </div>
+          </div>
+        )}
+        
+        {ConfirmationModalComponent}
       </div>
     </div>
   );

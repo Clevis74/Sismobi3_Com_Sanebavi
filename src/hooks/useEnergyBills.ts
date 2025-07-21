@@ -270,6 +270,7 @@ export function useEnergyBills(supabaseAvailable: boolean = false) {
     updateEnergyBill,
     deleteEnergyBill,
     recarregarDados,
+    setLocalEnergyBills,
     
     // Informações adicionais
     temDados: energyBills.length > 0,

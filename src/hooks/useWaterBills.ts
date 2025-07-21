@@ -270,6 +270,7 @@ export function useWaterBills(supabaseAvailable: boolean = false) {
     updateWaterBill,
     deleteWaterBill,
     recarregarDados,
+    setLocalWaterBills,
     
     // Informações adicionais
     temDados: waterBills.length > 0,

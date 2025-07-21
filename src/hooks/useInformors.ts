@@ -285,6 +285,7 @@ export function useInformors(supabaseAvailable?: boolean) {
     excluirInformor,
     atualizarInformor,
     recarregarDados,
+    setLocalInformors,
     
     // Informações adicionais
     temDados: informors.length > 0,

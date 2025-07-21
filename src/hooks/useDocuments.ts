@@ -268,6 +268,7 @@ export function useDocuments(supabaseAvailable: boolean = false) {
     updateDocument,
     deleteDocument,
     recarregarDados,
+    setLocalDocuments,
     
     // Informações adicionais
     temDados: documents.length > 0,

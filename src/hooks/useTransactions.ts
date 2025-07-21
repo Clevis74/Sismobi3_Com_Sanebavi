@@ -258,6 +258,7 @@ export function useTransactions(supabaseAvailable: boolean = false) {
     updateTransaction,
     deleteTransaction,
     recarregarDados,
+    setLocalTransactions,
     
     // Informações adicionais
     temDados: transactions.length > 0,
