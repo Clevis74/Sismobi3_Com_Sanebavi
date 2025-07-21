@@ -239,5 +239,3 @@ export const ActivationForm: React.FC = () => {
     </div>
   );
 };
-
-export { ActivationForm }
