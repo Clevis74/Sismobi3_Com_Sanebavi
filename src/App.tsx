@@ -21,6 +21,7 @@ import { ActivationForm } from './components/Activation/ActivationForm';
 import { useProperties } from './hooks/useProperties';
 import { useTransactions } from './hooks/useTransactions';
 import { calculateFinancialSummary } from './utils/calculations';
+import { useState } from 'react';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,20 +33,54 @@ const queryClient = new QueryClient({
 });
 
 function AppContent() {
+  const [showFinancialValues, setShowFinancialValues] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  
   const { data: properties = [] } = useProperties();
   const { data: transactions = [] } = useTransactions();
   
-  const financialSummary = calculateFinancialSummary(transactions, properties);
+  const financialSummary = calculateFinancialSummary(properties, transactions);
+
+  const handleToggleFinancialValues = () => {
+    setShowFinancialValues(prev => !prev);
+  };
+
+  const handleToggleTheme = () => {
+    setIsDarkMode(prev => !prev);
+  };
+
+  const handleExport = () => {
+    // TODO: Implement export functionality
+    console.log('Export functionality to be implemented');
+  };
+
+  const handleImport = () => {
+    // TODO: Implement import functionality
+    console.log('Import functionality to be implemented');
+  };
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
+        <Header 
+          showFinancialValues={showFinancialValues}
+          onToggleFinancialValues={handleToggleFinancialValues}
+          onToggleTheme={handleToggleTheme}
+          onExport={handleExport}
+          onImport={handleImport}
+        />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900">
           <div className="container mx-auto px-6 py-8">
             <Routes>
-              <Route path="/" element={<Dashboard summary={financialSummary} />} />
+              <Route path="/" element={
+                <Dashboard 
+                  summary={financialSummary} 
+                  properties={properties}
+                  transactions={transactions}
+                  showFinancialValues={showFinancialValues}
+                />
+              } />
               <Route path="/properties" element={<PropertyManager />} />
               <Route path="/tenants" element={<TenantManager />} />
               <Route path="/transactions" element={<TransactionManager />} />
@@ -58,7 +93,6 @@ function AppContent() {
             </Routes>
           </div>
         </main>
-        <SyncIndicator />
       </div>
     </div>
   );
