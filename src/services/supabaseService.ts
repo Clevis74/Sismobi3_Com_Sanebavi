@@ -175,7 +175,8 @@ export const transactionService = {
         amount: transaction.amount,
         description: transaction.description,
         date: transaction.date.toISOString(),
-        recurring: transaction.recurring || null
+        recurring: transaction.recurring || null,
+        // created_at will be automatically set by Supabase
       })
       .select()
       .single();
@@ -194,7 +195,8 @@ export const transactionService = {
     if (updates.amount !== undefined) updateData.amount = updates.amount;
     if (updates.description) updateData.description = updates.description;
     if (updates.date) updateData.date = updates.date.toISOString();
-    if (updates.recurring !== undefined) updateData.recurring = updates.recurring;
+    // Ensure recurring is explicitly set to null if undefined, otherwise Supabase might not update it
+    updateData.recurring = updates.recurring === undefined ? null : updates.recurring;
 
     const { data, error } = await supabase
       .from('transactions')
