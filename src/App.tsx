@@ -196,6 +196,8 @@ function AppContent() {
                   documents={documents}
                   loading={documentsLoading}
                   error={documentsError}
+                  properties={properties}
+                  tenants={tenants}
                   onAddDocument={addDocument}
                   onUpdateDocument={updateDocument}
                   onDeleteDocument={deleteDocument}
