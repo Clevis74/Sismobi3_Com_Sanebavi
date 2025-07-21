@@ -31,6 +31,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 });
 
 // Tipos para TypeScript (serão expandidos conforme criamos as tabelas)
+type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
+
 export type Database = {
   public: {
     Tables: {

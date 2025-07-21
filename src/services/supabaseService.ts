@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
-import { Property, Tenant, Transaction } from '../types';
+import { Property, Tenant, Transaction, EnergyBill, SharedPropertyConsumption } from '../types';
 import { Informor } from '../types/informor';
 
 // Serviços para Properties
@@ -280,6 +280,77 @@ export const informorService = {
   }
 };
 
+// Serviços para EnergyBills
+export const energyBillService = {
+  // Buscar todas as contas de energia
+  async getAll() {
+    const { data, error } = await supabase
+      .from('energy_bills')
+      .select('*')
+      .order('date', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Criar nova conta de energia
+  async create(bill: Omit<EnergyBill, 'id' | 'createdAt' | 'lastUpdated'>) {
+    const { data, error } = await supabase
+      .from('energy_bills')
+      .insert({
+        date: bill.date.toISOString(),
+        observations: bill.observations || null,
+        is_paid: bill.isPaid,
+        group_id: bill.groupId,
+        group_name: bill.groupName,
+        total_group_value: bill.totalGroupValue,
+        total_group_consumption: bill.totalGroupConsumption,
+        properties_in_group: bill.propertiesInGroup as any, // Cast to any for JSONB
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Atualizar conta de energia
+  async update(id: string, updates: Partial<EnergyBill>) {
+    const updateData: any = {};
+    
+    if (updates.date) updateData.date = updates.date.toISOString();
+    if (updates.observations !== undefined) updateData.observations = updates.observations || null;
+    if (updates.isPaid !== undefined) updateData.is_paid = updates.isPaid;
+    if (updates.groupId) updateData.group_id = updates.groupId;
+    if (updates.groupName) updateData.group_name = updates.groupName;
+    if (updates.totalGroupValue !== undefined) updateData.total_group_value = updates.totalGroupValue;
+    if (updates.totalGroupConsumption !== undefined) updateData.total_group_consumption = updates.totalGroupConsumption;
+    if (updates.propertiesInGroup !== undefined) {
+      updateData.properties_in_group = updates.propertiesInGroup as any; // Cast to any for JSONB
+    }
+
+    const { data, error } = await supabase
+      .from('energy_bills')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Deletar conta de energia
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('energy_bills')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  }
+};
+
 // Serviços para Documents
 export const documentService = {
   // Buscar todos os documentos
@@ -436,6 +507,24 @@ export const mappers = {
       status: data.status,
       contractSigned: data.contract_signed,
       lastUpdated: new Date(data.last_updated)
+    };
+  },
+
+  // Converter conta de energia do Supabase para o formato da aplicação
+  energyBillFromSupabase(data: any): EnergyBill {
+    return {
+      id: data.id,
+      date: new Date(data.date),
+      observations: data.observations || '',
+      isPaid: data.is_paid,
+      createdAt: new Date(data.created_at),
+      lastUpdated: new Date(data.last_updated),
+      groupId: data.group_id,
+      groupName: data.group_name,
+      totalGroupValue: data.total_group_value,
+      totalGroupConsumption: data.total_group_consumption,
+      // Ensure properties_in_group is correctly typed as SharedPropertyConsumption[]
+      propertiesInGroup: data.properties_in_group as SharedPropertyConsumption[],
     };
   }
 };

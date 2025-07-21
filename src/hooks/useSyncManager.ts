@@ -14,7 +14,7 @@ interface SyncStatus {
 interface PendingChange {
   id: string;
   type: 'create' | 'update' | 'delete';
-  entity: 'properties' | 'tenants' | 'transactions' | 'informors' | 'documents';
+  entity: 'properties' | 'tenants' | 'transactions' | 'informors' | 'documents' | 'energyBills';
   data: any;
   timestamp: Date;
 }
@@ -173,6 +173,22 @@ export function useSyncManager() {
         }
       }
       
+      if (change.entity === 'energyBills') {
+        const { energyBillService } = await import('../services/supabaseService');
+        
+        switch (change.type) {
+          case 'create':
+            await energyBillService.create(change.data);
+            break;
+          case 'update':
+            await energyBillService.update(change.data.id, change.data);
+            break;
+          case 'delete':
+            await energyBillService.delete(change.data.id);
+            break;
+        }
+      }
+      
       return true;
     } catch (error) {
       console.error(`Erro ao sincronizar mudança ${change.id}:`, error);
@@ -239,6 +255,7 @@ export function useSyncManager() {
       queryClient.invalidateQueries(['transactions']);
       queryClient.invalidateQueries(['informors']);
       queryClient.invalidateQueries(['documents']);
+      queryClient.invalidateQueries(['energyBills']);
     }
 
     setSyncStatus(prev => ({

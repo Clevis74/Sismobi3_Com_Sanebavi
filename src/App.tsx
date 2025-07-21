@@ -6,6 +6,7 @@ import { useProperties } from './hooks/useProperties';
 import { useTenants } from './hooks/useTenants';
 import { useTransactions } from './hooks/useTransactions';
 import { useDocuments } from './hooks/useDocuments';
+import { useEnergyBills } from './hooks/useEnergyBills';
 import { useSyncManager } from './hooks/useSyncManager';
 import { ActivationProvider } from './contexts/ActivationContext';
 import { useEnhancedToast } from './components/UI/EnhancedToast';
@@ -52,7 +53,6 @@ function AppContent() {
   const { syncStatus } = useSyncManager();
   
   const [alerts, setAlerts] = useLocalStorage<Alert[]>('alerts', []);
-  const [energyBills, setEnergyBills] = useLocalStorage<EnergyBill[]>('energyBills', []);
   const [waterBills, setWaterBills] = useLocalStorage<WaterBill[]>('waterBills', []);
   const [showFinancialValues, setShowFinancialValues] = useLocalStorage<boolean>('showFinancialValues', true);
   const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('theme', 'light');
@@ -111,6 +111,17 @@ function AppContent() {
     recarregarDados: recarregarDocuments
   } = useDocuments(supabaseAvailable);
 
+  // Hook para gerenciar contas de energia (com fallback para localStorage)
+  const {
+    energyBills,
+    carregando: carregandoEnergyBills,
+    erro: erroEnergyBills,
+    addEnergyBill,
+    updateEnergyBill,
+    deleteEnergyBill,
+    recarregarDados: recarregarEnergyBills
+  } = useEnergyBills(supabaseAvailable);
+
   // Listener para navegação para ativação
   useEffect(() => {
     const handleNavigateToActivation = () => {
@@ -163,29 +174,6 @@ function AppContent() {
 
   const deleteAlert = (id: string) => {
     setAlerts(prev => prev.filter(a => a.id !== id));
-  };
-
-  // Funções para gerenciar contas de energia
-  const addEnergyBill = (billData: Omit<EnergyBill, 'id' | 'createdAt' | 'lastUpdated'>) => {
-    const newBill: EnergyBill = {
-      ...billData,
-      id: Date.now().toString(),
-      createdAt: new Date(),
-      lastUpdated: new Date()
-    };
-    setEnergyBills(prev => [...prev, newBill]);
-  };
-
-  const updateEnergyBill = (id: string, updates: Partial<EnergyBill>) => {
-    setEnergyBills(prev => prev.map(bill => 
-      bill.id === id 
-        ? { ...bill, ...updates, lastUpdated: new Date() }
-        : bill
-    ));
-  };
-
-  const deleteEnergyBill = (id: string) => {
-    setEnergyBills(prev => prev.filter(bill => bill.id !== id));
   };
 
   // Funções para gerenciar contas de água
@@ -338,11 +326,14 @@ function AppContent() {
         return (
           <EnergyCalculator
             energyBills={energyBills}
+            loading={carregandoEnergyBills}
+            error={erroEnergyBills}
             properties={properties}
             showFinancialValues={showFinancialValues}
             onAddEnergyBill={addEnergyBill}
             onUpdateEnergyBill={updateEnergyBill}
             onDeleteEnergyBill={deleteEnergyBill}
+            onReload={recarregarEnergyBills}
           />
         );
       case 'sanebavi':

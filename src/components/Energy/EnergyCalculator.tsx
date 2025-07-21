@@ -15,30 +15,38 @@ import { formatCurrencyWithVisibility, formatDate, createLocalDate, formatCurren
 import { useActivation } from '../../contexts/ActivationContext';
 import { LoadingButton } from '../UI/LoadingSpinner';
 import { HighlightCard, AnimatedListItem } from '../UI/HighlightCard';
+import { useEnhancedToast } from '../UI/EnhancedToast';
 
 interface EnergyCalculatorProps {
   energyBills: EnergyBill[];
+  loading?: boolean;
+  error?: Error | null;
   properties: any[]; // Lista de propriedades para vinculação
   showFinancialValues: boolean;
-  onAddEnergyBill: (bill: Omit<EnergyBill, 'id' | 'createdAt' | 'lastUpdated'>) => void;
-  onUpdateEnergyBill: (id: string, bill: Partial<EnergyBill>) => void;
-  onDeleteEnergyBill: (id: string) => void;
+  onAddEnergyBill: (bill: Omit<EnergyBill, 'id' | 'createdAt' | 'lastUpdated'>) => Promise<boolean>;
+  onUpdateEnergyBill: (id: string, bill: Partial<EnergyBill>) => Promise<boolean>;
+  onDeleteEnergyBill: (id: string) => Promise<boolean>;
+  onReload?: () => void;
 }
 
 export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
   energyBills,
+  loading: externalLoading = false,
+  error: externalError = null,
   properties,
   showFinancialValues,
   onAddEnergyBill,
   onUpdateEnergyBill,
   onDeleteEnergyBill
+  onReload
 }) => {
   const { isDemoMode } = useActivation();
+  const toast = useEnhancedToast();
   const [showForm, setShowForm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [editingBill, setEditingBill] = useState<EnergyBill | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<string>(DEFAULT_ENERGY_GROUPS[0].id);
-  const [loading, setLoading] = useState(false);
+  const [internalLoading, setInternalLoading] = useState(false);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [newItemId, setNewItemId] = useState<string | null>(null);
   
@@ -48,6 +56,9 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
   };
 
   const isAtDemoLimit = isDemoMode && energyBills.length >= DEMO_LIMITS.maxEnergyBills;
+
+  // Combinar estados de loading
+  const loading = externalLoading || internalLoading;
 
   // Estados do formulário
   const [formData, setFormData] = useState({
@@ -221,14 +232,14 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (isAtDemoLimit && !editingBill) {
       return; // Não permite adicionar se estiver no limite do demo
     }
     
-    setLoading(true);
+    setInternalLoading(true);
     
     const selectedGroupData = DEFAULT_ENERGY_GROUPS.find(g => g.id === selectedGroup);
     if (!selectedGroupData) return;
@@ -244,33 +255,41 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
       propertiesInGroup: propertiesInGroup
     };
 
-    // Simular operação assíncrona
-    setTimeout(() => {
-      const newBill = {
-        id: Date.now().toString(),
-        ...billData
-      };
-      
+    try {
+      let success = false;
       if (editingBill) {
-        onUpdateEnergyBill(editingBill.id, billData);
-        // Destacar o item editado
-        setHighlightedId(editingBill.id);
-        setTimeout(() => setHighlightedId(null), 3000);
+        success = await onUpdateEnergyBill(editingBill.id, billData);
+        if (success) {
+          // Destacar o item editado
+          setHighlightedId(editingBill.id);
+          setTimeout(() => setHighlightedId(null), 3000);
+        }
       } else {
-        onAddEnergyBill(billData);
-        // Destacar o novo item
-        setHighlightedId(newBill.id);
-        setNewItemId(newBill.id);
-        setTimeout(() => setHighlightedId(null), 3000);
-        setTimeout(() => setNewItemId(null), 1000);
+        success = await onAddEnergyBill(billData);
+        if (success) {
+          // Destacar o novo item (será o primeiro da lista após a criação)
+          setTimeout(() => {
+            const newestBill = energyBills[0];
+            if (newestBill) {
+              setHighlightedId(newestBill.id);
+              setNewItemId(newestBill.id);
+              
+              // Limpar destaque após 3 segundos
+              setTimeout(() => setHighlightedId(null), 3000);
+              setTimeout(() => setNewItemId(null), 1000);
+            }
+          }, 100);
+        }
       }
-
-      // Reset form
-      setShowForm(false);
-      setEditingBill(null);
-      resetForm();
-      setLoading(false);
-    }, 800);
+      if (success) {
+        // Reset form
+        setShowForm(false);
+        setEditingBill(null);
+        resetForm();
+      }
+    } finally {
+      setInternalLoading(false);
+    }
   };
 
   const resetForm = () => {
@@ -842,16 +861,24 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                       <button
                         onClick={() => handleEditBill(bill)}
+                        disabled={loading}
                         className="text-blue-600 hover:text-blue-900"
                       >
                         Editar
                       </button>
-                      <button
-                        onClick={() => onDeleteEnergyBill(bill.id)}
-                        className="text-red-600 hover:text-red-900"
+                      <LoadingButton
+                        loading={loading}
+                        onClick={async () => {
+                          const success = await onDeleteEnergyBill(bill.id);
+                          if (success) {
+                            toast.deleted('Conta de energia');
+                          }
+                        }}
+                        variant="danger"
+                        className="text-red-600 hover:text-red-900 text-sm"
                       >
                         Excluir
-                      </button>
+                      </LoadingButton>
                     </td>
                   </tr>
                 ))}
@@ -863,6 +890,28 @@ export const EnergyCalculator: React.FC<EnergyCalculatorProps> = ({
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Mostrar erro se houver */}
+      {externalError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 flex items-center space-x-3">
+          <div className="w-6 h-6 text-red-600 flex-shrink-0">⚠️</div>
+          <div>
+            <h3 className="text-red-800 font-medium">Erro ao carregar contas de energia</h3>
+            <p className="text-red-600 text-sm mt-1">
+              {externalError instanceof Error ? externalError.message : 'Erro desconhecido'}
+            </p>
+          </div>
+          {onReload && (
+            <LoadingButton
+              loading={loading}
+              onClick={onReload}
+              variant="secondary"
+            >
+              Tentar Novamente
+            </LoadingButton>
+          )}
         </div>
       )}
     </div>
