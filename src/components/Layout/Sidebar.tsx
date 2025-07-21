@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Home, 
   Building, 
@@ -14,27 +15,27 @@ import {
   Shield
 } from 'lucide-react';
 
-interface SidebarProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-}
 
 const menuItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: Home },
-  { id: 'properties', label: 'Propriedades', icon: Building },
-  { id: 'tenants', label: 'Inquilinos', icon: Users },
-  { id: 'transactions', label: 'Transações', icon: DollarSign },
-  { id: 'reports', label: 'Relatórios', icon: TrendingUp },
-  { id: 'alerts', label: 'Alertas', icon: Bell },
-  { id: 'energy', label: 'Energia (CPFL)', icon: Zap },
-  { id: 'sanebavi', label: 'Água (Sanebavi)', icon: Droplets },
-  { id: 'documents', label: 'Documentos', icon: FileText },
-  { id: 'informors', label: 'Informors', icon: Info },
-  { id: 'activation', label: 'Ativação', icon: Shield },
-  { id: 'settings', label: 'Configurações', icon: Settings },
+  { id: '/', label: 'Dashboard', icon: Home },
+  { id: '/properties', label: 'Propriedades', icon: Building },
+  { id: '/tenants', label: 'Inquilinos', icon: Users },
+  { id: '/transactions', label: 'Transações', icon: DollarSign },
+  { id: '/reports', label: 'Relatórios', icon: TrendingUp },
+  { id: '/alerts', label: 'Alertas', icon: Bell },
+  { id: '/energy', label: 'Energia (CPFL)', icon: Zap },
+  { id: '/sanebavi', label: 'Água (Sanebavi)', icon: Droplets },
+  { id: '/documents', label: 'Documentos', icon: FileText },
+  { id: '/informors', label: 'Informors', icon: Info },
+  { id: '/activation', label: 'Ativação', icon: Shield },
+  { id: '/settings', label: 'Configurações', icon: Settings },
 ];
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
+export const Sidebar: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const activeTab = location.pathname;
+
   return (
     <div className="w-64 bg-white dark:bg-gray-800 shadow-xl h-full flex flex-col border-r border-gray-200 dark:border-gray-700">
       <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700">
@@ -56,7 +57,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
           return (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => navigate(item.id)}
               className={`w-full flex items-center px-6 py-3 mx-2 rounded-lg text-left transition-all duration-200 group ${
                 activeTab === item.id
                   ? 'bg-blue-600 text-white shadow-lg transform scale-105'

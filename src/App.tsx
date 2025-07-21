@@ -18,6 +18,9 @@ import { EnergyCalculator } from './components/Energy/EnergyCalculator';
 import { SanebaviManager } from './components/Sanebavi/SanebaviManager';
 import { InformorsManager } from './components/Informors/InformorsManager';
 import { ActivationForm } from './components/Activation/ActivationForm';
+import { useProperties } from './hooks/useProperties';
+import { useTransactions } from './hooks/useTransactions';
+import { calculateFinancialSummary } from './utils/calculations';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,34 +31,44 @@ const queryClient = new QueryClient({
   },
 });
 
+function AppContent() {
+  const { data: properties = [] } = useProperties();
+  const { data: transactions = [] } = useTransactions();
+  
+  const financialSummary = calculateFinancialSummary(transactions, properties);
+
+  return (
+    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900">
+          <div className="container mx-auto px-6 py-8">
+            <Routes>
+              <Route path="/" element={<Dashboard summary={financialSummary} />} />
+              <Route path="/properties" element={<PropertyManager />} />
+              <Route path="/tenants" element={<TenantManager />} />
+              <Route path="/transactions" element={<TransactionManager />} />
+              <Route path="/documents" element={<DocumentManager />} />
+              <Route path="/reports" element={<ReportManager />} />
+              <Route path="/energy" element={<EnergyCalculator />} />
+              <Route path="/sanebavi" element={<SanebaviManager />} />
+              <Route path="/informors" element={<InformorsManager />} />
+              <Route path="/activation" element={<ActivationForm />} />
+            </Routes>
+          </div>
+        </main>
+        <SyncIndicator />
+      </div>
+    </div>
+  );
+}
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ActivationProvider>
         <Router>
-          <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
-            <Sidebar />
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <Header />
-              <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900">
-                <div className="container mx-auto px-6 py-8">
-                  <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/properties" element={<PropertyManager />} />
-                    <Route path="/tenants" element={<TenantManager />} />
-                    <Route path="/transactions" element={<TransactionManager />} />
-                    <Route path="/documents" element={<DocumentManager />} />
-                    <Route path="/reports" element={<ReportManager />} />
-                    <Route path="/energy" element={<EnergyCalculator />} />
-                    <Route path="/sanebavi" element={<SanebaviManager />} />
-                    <Route path="/informors" element={<InformorsManager />} />
-                    <Route path="/activation" element={<ActivationForm />} />
-                  </Routes>
-                </div>
-              </main>
-              <SyncIndicator />
-            </div>
-          </div>
+          <AppContent />
           <ToastContainer 
             position="bottom-right" 
             autoClose={5000} 
