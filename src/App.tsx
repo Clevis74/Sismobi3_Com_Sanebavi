@@ -24,6 +24,7 @@ import { useTransactions } from './hooks/useTransactions';
 import { useDocuments } from './hooks/useDocuments';
 import { useEnergyBills } from './hooks/useEnergyBills';
 import { useWaterBills } from './hooks/useWaterBills';
+import { testConnection } from './lib/supabaseClient';
 import { calculateFinancialSummary } from './utils/calculations';
 import { useState } from 'react';
 
@@ -39,12 +40,67 @@ const queryClient = new QueryClient({
 function AppContent() {
   const [showFinancialValues, setShowFinancialValues] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [supabaseAvailable, setSupabaseAvailable] = useState(false);
+
+  // Verificar disponibilidade do Supabase
+  React.useEffect(() => {
+    const checkSupabase = async () => {
+      const isAvailable = await testConnection();
+      setSupabaseAvailable(isAvailable);
+    };
+    checkSupabase();
+  }, []);
   
-  const { data: properties = [] } = useProperties();
-  const { data: tenants = [] } = useTenants();
-  const { data: transactions = [] } = useTransactions();
-  const { data: documents = [] } = useDocuments();
-  const { data: energyBills = [] } = useEnergyBills();
+  const { 
+    properties, 
+    loading: propertiesLoading, 
+    error: propertiesError,
+    addProperty,
+    updateProperty,
+    deleteProperty,
+    recarregarDados: reloadProperties
+  } = useProperties(supabaseAvailable);
+  
+  const { 
+    tenants, 
+    loading: tenantsLoading, 
+    error: tenantsError,
+    addTenant,
+    updateTenant,
+    deleteTenant,
+    recarregarDados: reloadTenants
+  } = useTenants(supabaseAvailable);
+  
+  const { 
+    transactions, 
+    loading: transactionsLoading, 
+    error: transactionsError,
+    addTransaction,
+    updateTransaction,
+    deleteTransaction,
+    recarregarDados: reloadTransactions
+  } = useTransactions(supabaseAvailable);
+  
+  const { 
+    documents, 
+    loading: documentsLoading, 
+    error: documentsError,
+    addDocument,
+    updateDocument,
+    deleteDocument,
+    recarregarDados: reloadDocuments
+  } = useDocuments(supabaseAvailable);
+  
+  const { 
+    energyBills, 
+    loading: energyBillsLoading, 
+    error: energyBillsError,
+    addEnergyBill,
+    updateEnergyBill,
+    deleteEnergyBill,
+    recarregarDados: reloadEnergyBills
+  } = useEnergyBills(supabaseAvailable);
+  
   const { 
     data: waterBills = [], 
     loading: waterBillsLoading, 
@@ -53,7 +109,7 @@ function AppContent() {
     updateWaterBill,
     deleteWaterBill,
     recarregarDados: reloadWaterBills
-  } = useWaterBills();
+  } = useWaterBills(supabaseAvailable);
   
   const financialSummary = calculateFinancialSummary(properties, transactions);
 
@@ -100,133 +156,84 @@ function AppContent() {
               <Route path="/properties" element={
                 <PropertyManager 
                   properties={properties}
-                  onAddProperty={(property) => {
-                    // TODO: Implement add property functionality
-                    console.log('Add property:', property);
-                  }}
-                  onEditProperty={(property) => {
-                    // TODO: Implement edit property functionality
-                    console.log('Edit property:', property);
-                  }}
-                  onDeleteProperty={(id) => {
-                    // TODO: Implement delete property functionality
-                    console.log('Delete property:', id);
-                  }}
+                  loading={propertiesLoading}
+                  error={propertiesError}
+                  showFinancialValues={showFinancialValues}
+                  onAddProperty={addProperty}
+                  onUpdateProperty={updateProperty}
+                  onDeleteProperty={deleteProperty}
+                  onReload={reloadProperties}
                 />
               } />
               <Route path="/tenants" element={
                 <TenantManager 
                   tenants={tenants}
+                  loading={tenantsLoading}
+                  error={tenantsError}
                   properties={properties}
                   showFinancialValues={showFinancialValues}
-                  onAddTenant={(tenant) => {
-                    // TODO: Implement add tenant functionality
-                    console.log('Add tenant:', tenant);
-                  }}
-                  onEditTenant={(tenant) => {
-                    // TODO: Implement edit tenant functionality
-                    console.log('Edit tenant:', tenant);
-                  }}
-                  onDeleteTenant={(id) => {
-                    // TODO: Implement delete tenant functionality
-                    console.log('Delete tenant:', id);
-                  }}
+                  onAddTenant={addTenant}
+                  onUpdateTenant={updateTenant}
+                  onDeleteTenant={deleteTenant}
+                  onReload={reloadTenants}
                 />
               } />
               <Route path="/transactions" element={
                 <TransactionManager 
                   transactions={transactions}
+                  loading={transactionsLoading}
+                  error={transactionsError}
                   properties={properties}
                   showFinancialValues={showFinancialValues}
-                  onAddTransaction={(transaction) => {
-                    // TODO: Implement add transaction functionality
-                    console.log('Add transaction:', transaction);
-                  }}
-                  onUpdateTransaction={(transaction) => {
-                    // TODO: Implement update transaction functionality
-                    console.log('Update transaction:', transaction);
-                  }}
-                  onDeleteTransaction={(id) => {
-                    // TODO: Implement delete transaction functionality
-                    console.log('Delete transaction:', id);
-                  }}
-                  loading={false}
-                  error={null}
+                  onAddTransaction={addTransaction}
+                  onUpdateTransaction={updateTransaction}
+                  onDeleteTransaction={deleteTransaction}
+                  onReload={reloadTransactions}
                 />
               } />
               <Route path="/documents" element={
                 <DocumentManager 
                   documents={documents}
-                  onAddDocument={(document) => {
-                    // TODO: Implement add document functionality
-                    console.log('Add document:', document);
-                  }}
-                  onUpdateDocument={(document) => {
-                    // TODO: Implement update document functionality
-                    console.log('Update document:', document);
-                  }}
-                  onDeleteDocument={(id) => {
-                    // TODO: Implement delete document functionality
-                    console.log('Delete document:', id);
-                  }}
-                  loading={false}
-                  error={null}
+                  loading={documentsLoading}
+                  error={documentsError}
+                  onAddDocument={addDocument}
+                  onUpdateDocument={updateDocument}
+                  onDeleteDocument={deleteDocument}
+                  onReload={reloadDocuments}
                 />
               } />
               <Route path="/reports" element={
                 <ReportManager 
                   properties={properties}
-                  tenants={tenants}
                   transactions={transactions}
-                  documents={documents}
+                  summary={financialSummary}
                   showFinancialValues={showFinancialValues}
                 />
               } />
               <Route path="/energy" element={
                 <EnergyCalculator 
                   energyBills={energyBills}
-                  waterBills={waterBills}
+                  loading={energyBillsLoading}
+                  error={energyBillsError}
                   properties={properties}
-                  onAddEnergyBill={(bill) => {
-                    // TODO: Implement add energy bill functionality
-                    console.log('Add energy bill:', bill);
-                  }}
-                  onAddWaterBill={(bill) => {
-                    // TODO: Implement add water bill functionality
-                    console.log('Add water bill:', bill);
-                  }}
-                  onUpdateEnergyBill={(bill) => {
-                    // TODO: Implement update energy bill functionality
-                    console.log('Update energy bill:', bill);
-                  }}
-                  onUpdateWaterBill={(bill) => {
-                    // TODO: Implement update water bill functionality
-                    console.log('Update water bill:', bill);
-                  }}
-                  onDeleteEnergyBill={(id) => {
-                    // TODO: Implement delete energy bill functionality
-                    console.log('Delete energy bill:', id);
-                  }}
-                  onDeleteWaterBill={(id) => {
-                    // TODO: Implement delete water bill functionality
-                    console.log('Delete water bill:', id);
-                  }}
-                  loading={false}
-                  error={null}
+                  showFinancialValues={showFinancialValues}
+                  onAddEnergyBill={addEnergyBill}
+                  onUpdateEnergyBill={updateEnergyBill}
+                  onDeleteEnergyBill={deleteEnergyBill}
+                  onReload={reloadEnergyBills}
                 />
               } />
               <Route path="/sanebavi" element={
                 <SanebaviManager 
-                  properties={properties}
-                  tenants={tenants}
                   waterBills={waterBills}
                   loading={waterBillsLoading}
                   error={waterBillsError}
+                  properties={properties}
+                  showFinancialValues={showFinancialValues}
                   onAddWaterBill={addWaterBill}
                   onUpdateWaterBill={updateWaterBill}
                   onDeleteWaterBill={deleteWaterBill}
-                  recarregarDados={reloadWaterBills}
-                  showFinancialValues={showFinancialValues}
+                  onReload={reloadWaterBills}
                 />
               } />
               <Route path="/informors" element={<InformorsManager />} />
