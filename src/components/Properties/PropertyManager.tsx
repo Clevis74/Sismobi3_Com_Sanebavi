@@ -311,8 +311,25 @@ export const PropertyManager: React.FC<PropertyManagerProps> = ({
 
       {!loading && properties.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">Nenhuma propriedade cadastrada</p>
-          <p className="text-gray-400 mt-2">Comece adicionando sua primeira propriedade</p>
+          <div className="max-w-md mx-auto">
+            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Building className="w-10 h-10 text-blue-600" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Nenhuma propriedade ainda</h3>
+            <p className="text-gray-500 mb-6">
+              Que tal começar cadastrando sua primeira propriedade? É rápido e fácil!
+            </p>
+            <LoadingButton
+              loading={loading}
+              onClick={() => setShowForm(true)}
+              disabled={isAtDemoLimit}
+              variant="primary"
+              className="px-6 py-3"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Cadastrar Primeira Propriedade
+            </LoadingButton>
+          </div>
         </div>
       )}
       

@@ -28,66 +28,66 @@ export const Header: React.FC<HeaderProps> = ({
   });
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 px-6 py-4">
+    <header className="bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700 px-6 py-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center text-gray-600 dark:text-gray-300">
+        <div className="flex items-center space-x-6">
+          <div className="flex items-center text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 px-4 py-2 rounded-lg">
             <Calendar className="w-5 h-5 mr-2" />
-            <span className="capitalize">{currentDate}</span>
+            <span className="capitalize text-sm font-medium">{currentDate}</span>
           </div>
           <SyncIndicator />
         </div>
         
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3">
           <button
             onClick={onToggleTheme}
-            className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
             title="Alternar tema"
           >
-            🌗 Alternar Tema
+            <span className="text-lg mr-2">🌗</span>
+            <span className="hidden md:inline">Tema</span>
           </button>
           <button
             onClick={onToggleFinancialValues}
-            className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
             title={showFinancialValues ? 'Ocultar valores financeiros' : 'Mostrar valores financeiros'}
           >
             {showFinancialValues ? (
               <>
                 <Eye className="w-4 h-4 mr-2" />
-                Ocultar Valores
+                <span className="hidden md:inline">Ocultar Valores</span>
               </>
             ) : (
               <>
                 <EyeOff className="w-4 h-4 mr-2" />
-                Mostrar Valores
+                <span className="hidden md:inline">Mostrar Valores</span>
               </>
             )}
           </button>
           <button
             onClick={onImport}
-            className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+            title="Importar dados de backup"
           >
             <Upload className="w-4 h-4 mr-2" />
-            Importar
+            <span className="hidden md:inline">Importar</span>
           </button>
-          <button
+          <div className="relative">
+            <button
             onClick={onExport}
             disabled={isDemoMode}
-            className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+            className={`flex items-center px-4 py-2 rounded-lg transition-all duration-200 ${
               isDemoMode
-                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                : 'bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-800'
+                ? 'bg-gray-400 text-gray-200 cursor-not-allowed opacity-60'
+                : 'bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-800 shadow-lg hover:shadow-xl transform hover:scale-105'
             }`}
             title={isDemoMode ? 'Exportação desabilitada no modo DEMO' : 'Exportar dados'}
           >
             <Download className="w-4 h-4 mr-2" />
-            {isDemoMode ? 'Exportar (DEMO)' : 'Exportar'}
+            <span className="hidden md:inline">{isDemoMode ? 'Exportar (DEMO)' : 'Exportar'}</span>
+            <span className="md:hidden">💾</span>
           </button>
-          {isDemoMode && (
-            <div className="absolute top-full right-0 mt-1 bg-red-100 border border-red-200 rounded-lg p-2 text-xs text-red-700 whitespace-nowrap">
-              Exportação desabilitada no modo DEMO
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </header>

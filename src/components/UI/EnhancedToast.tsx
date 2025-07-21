@@ -38,7 +38,7 @@ export const enhancedToast = {
       />,
       {
         ...options,
-        className: 'bg-green-50 border-l-4 border-green-400',
+        className: 'bg-gradient-to-r from-green-50 to-green-100 border-l-4 border-green-500 shadow-lg',
       }
     );
   },
@@ -52,7 +52,7 @@ export const enhancedToast = {
       />,
       {
         ...options,
-        className: 'bg-red-50 border-l-4 border-red-400',
+        className: 'bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500 shadow-lg',
       }
     );
   },
@@ -66,7 +66,7 @@ export const enhancedToast = {
       />,
       {
         ...options,
-        className: 'bg-yellow-50 border-l-4 border-yellow-400',
+        className: 'bg-gradient-to-r from-yellow-50 to-yellow-100 border-l-4 border-yellow-500 shadow-lg',
       }
     );
   },
@@ -80,32 +80,32 @@ export const enhancedToast = {
       />,
       {
         ...options,
-        className: 'bg-blue-50 border-l-4 border-blue-400',
+        className: 'bg-gradient-to-r from-blue-50 to-blue-100 border-l-4 border-blue-500 shadow-lg',
       }
     );
   },
 
   // Toasts específicos para ações
   created: (itemName: string, options?: ToastOptions) => {
-    enhancedToast.success(`${itemName} criado com sucesso!`, {
+    enhancedToast.success(`✨ ${itemName} criado com sucesso!`, {
       ...options,
-      icon: '🎉'
+      autoClose: 4000
     });
   },
 
   updated: (itemName: string, options?: ToastOptions) => {
-    enhancedToast.success(`${itemName} atualizado com sucesso!`, {
+    enhancedToast.success(`📝 ${itemName} atualizado com sucesso!`, {
       ...options,
-      icon: '✏️'
+      autoClose: 3000
     });
   },
 
   deleted: (itemName: string, options?: ToastOptions & { onUndo?: () => void }) => {
-    enhancedToast.success(`${itemName} excluído com sucesso!`, {
+    enhancedToast.success(`🗑️ ${itemName} excluído com sucesso!`, {
       ...options,
-      icon: '🗑️',
+      autoClose: 5000,
       action: options?.onUndo ? {
-        label: 'Desfazer',
+        label: '↶ Desfazer',
         onClick: options.onUndo
       } : undefined
     });
@@ -113,11 +113,11 @@ export const enhancedToast = {
 
   demoLimit: (moduleName: string, limit: number) => {
     enhancedToast.warning(
-      `Limite do modo DEMO atingido! Você pode ter até ${limit} ${moduleName.toLowerCase()} no modo DEMO.`,
+      `🚫 Ops! Limite do modo DEMO atingido. Você pode cadastrar até ${limit} ${moduleName.toLowerCase()}. Que tal ativar a versão completa?`,
       {
-        autoClose: 5000,
+        autoClose: 7000,
         action: {
-          label: 'Ativar Sistema',
+          label: '🔓 Ativar Agora',
           onClick: () => {
             // Navegar para aba de ativação
             window.dispatchEvent(new CustomEvent('navigate-to-activation'));
@@ -128,15 +128,16 @@ export const enhancedToast = {
   },
 
   activationSuccess: () => {
-    enhancedToast.success('🎉 Sistema ativado com sucesso! Todos os recursos foram liberados.', {
-      autoClose: 5000
+    enhancedToast.success('🎉 Parabéns! Sistema ativado com sucesso! Agora você tem acesso completo a todas as funcionalidades.', {
+      autoClose: 6000
     });
   },
 
   exportDisabled: () => {
-    enhancedToast.warning('Exportação desabilitada no modo DEMO. Ative o sistema para acessar esta funcionalidade.', {
+    enhancedToast.warning('📤 A exportação está disponível apenas na versão completa. Ative o sistema para liberar esta funcionalidade!', {
+      autoClose: 5000,
       action: {
-        label: 'Ativar',
+        label: '🔓 Ativar Sistema',
         onClick: () => {
           window.dispatchEvent(new CustomEvent('navigate-to-activation'));
         }
