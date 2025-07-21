@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, MapPin, DollarSign } from 'lucide-react';
+import { Plus, Edit, Trash2, MapPin, DollarSign, Building } from 'lucide-react';
 import { Property } from '../../types';
 import { PropertyForm } from './PropertyForm';
 import { formatCurrencyWithVisibility } from '../../utils/calculations';
