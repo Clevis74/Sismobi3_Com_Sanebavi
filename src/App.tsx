@@ -128,8 +128,62 @@ function AppContent() {
   };
 
   const handleImport = () => {
-    // TODO: Implement import functionality
-    console.log('Import functionality to be implemented');
+    if (!isActivated) {
+      showToast('Funcionalidade disponível apenas na versão completa', 'warning');
+      return;
+    }
+    
+    showConfirmation(
+      'Confirmar Importação',
+      'Esta ação irá sobrescrever todos os dados atuais. Deseja continuar?',
+      () => {
+        setImportLoading(true);
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = async (e) => {
+          const file = (e.target as HTMLInputElement).files?.[0];
+          if (!file) {
+            setImportLoading(false);
+            return;
+          }
+          
+          try {
+            const importedData = await importBackup(file);
+            
+            // Aplicar dados importados ao localStorage
+            if (importedData.properties) setLocalProperties(importedData.properties);
+            if (importedData.tenants) setLocalTenants(importedData.tenants);
+            if (importedData.transactions) setLocalTransactions(importedData.transactions);
+            if (importedData.documents) setLocalDocuments(importedData.documents);
+            if (importedData.energyBills) setLocalEnergyBills(importedData.energyBills);
+            if (importedData.waterBills) setLocalWaterBills(importedData.waterBills);
+            if (importedData.informors) setLocalInformors(importedData.informors);
+            
+            // Forçar sincronização com Supabase
+            if (supabaseAvailable) {
+              performSync();
+            }
+            
+            const totalItems = (importedData.properties?.length || 0) +
+                              (importedData.tenants?.length || 0) +
+                              (importedData.transactions?.length || 0) +
+                              (importedData.documents?.length || 0) +
+                              (importedData.energyBills?.length || 0) +
+                              (importedData.waterBills?.length || 0) +
+                              (importedData.informors?.length || 0);
+            
+            showToast(`Backup importado com sucesso! ${totalItems} itens restaurados.`, 'success');
+          } catch (error) {
+            console.error('Erro ao importar backup:', error);
+            showToast('Erro ao importar backup. Verifique se o arquivo é válido.', 'error');
+          } finally {
+            setImportLoading(false);
+          }
+        };
+        input.click();
+      }
+    );
   };
 
   return (
