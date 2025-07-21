@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, User, Phone, Mail, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, User, Phone, Mail, Calendar, Users } from 'lucide-react';
 import { Tenant } from '../../types';
 import { TenantForm } from './TenantForm';
 import { formatDate, formatCurrencyWithVisibility } from '../../utils/calculations';
