@@ -207,24 +207,24 @@ export function useProperties(supabaseAvailable: boolean = false) {
   });
 
   // Função para criar nova propriedade
-  const addProperty = async (propertyData: Omit<Property, 'id' | 'createdAt'>): Promise<boolean> => {
+  const addProperty = async (propertyData: Omit<Property, 'id' | 'createdAt'>): Promise<Property | null> => {
     try {
-      await createMutation.mutateAsync(propertyData);
-      return true;
+      const newProperty = await createMutation.mutateAsync(propertyData);
+      return newProperty;
     } catch (error) {
       // Erro já tratado na mutation
-      return false;
+      return null;
     }
   };
 
   // Função para atualizar propriedade
-  const updateProperty = async (id: string, updates: Partial<Property>): Promise<boolean> => {
+  const updateProperty = async (id: string, updates: Partial<Property>): Promise<Property | null> => {
     try {
       // Se estamos atualizando o status da propriedade para 'rented' ou 'vacant',
       // precisamos recarregar os dados para obter as informações atualizadas do inquilino
       const shouldReloadAfterUpdate = updates.status && (updates.status === 'rented' || updates.status === 'vacant');
       
-      await updateMutation.mutateAsync({ id, updates });
+      const updatedProperty = await updateMutation.mutateAsync({ id, updates });
       
       // Recarregar dados se necessário para sincronizar com mudanças de inquilino
       if (shouldReloadAfterUpdate && supabaseAvailable) {
@@ -233,10 +233,10 @@ export function useProperties(supabaseAvailable: boolean = false) {
         }, 500);
       }
       
-      return true;
+      return updatedProperty;
     } catch (error) {
       // Erro já tratado na mutation
-      return false;
+      return null;
     }
   };
 
