@@ -257,14 +257,14 @@ export const exportWaterBillsToCSV = (bills: WaterBill[], groupId?: string): voi
   filteredBills.forEach(bill => {
     bill.propertiesInGroup.forEach(prop => {
       csvData.push([
-        new Date(bill.date).toLocaleDateString('pt-BR'),
+        bill.date.toLocaleDateString('pt-BR'),
         bill.groupName,
         bill.totalGroupValue.toFixed(2),
         prop.name,
         prop.numberOfPeople.toString(),
         prop.proportionalValue.toFixed(2),
         prop.isPaid ? 'Pago' : 'Pendente',
-        prop.dueDate ? new Date(prop.dueDate).toLocaleDateString('pt-BR') : '',
+        prop.dueDate ? prop.dueDate.toLocaleDateString('pt-BR') : '',
         bill.observations
       ]);
     });

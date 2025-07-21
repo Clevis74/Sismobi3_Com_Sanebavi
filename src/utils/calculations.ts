@@ -8,9 +8,8 @@ export const calculateFinancialSummary = (
   const currentYear = new Date().getFullYear();
   
   const monthlyTransactions = transactions.filter(t => {
-    const transactionDate = new Date(t.date);
-    return transactionDate.getMonth() === currentMonth && 
-           transactionDate.getFullYear() === currentYear;
+    return t.date.getMonth() === currentMonth && 
+           t.date.getFullYear() === currentYear;
   });
 
   const totalIncome = monthlyTransactions
