@@ -45,7 +45,15 @@ function AppContent() {
   const { data: transactions = [] } = useTransactions();
   const { data: documents = [] } = useDocuments();
   const { data: energyBills = [] } = useEnergyBills();
-  const { data: waterBills = [] } = useWaterBills();
+  const { 
+    data: waterBills = [], 
+    loading: waterBillsLoading, 
+    error: waterBillsError,
+    addWaterBill,
+    updateWaterBill,
+    deleteWaterBill,
+    recarregarDados: reloadWaterBills
+  } = useWaterBills();
   
   const financialSummary = calculateFinancialSummary(properties, transactions);
 
@@ -211,6 +219,13 @@ function AppContent() {
                 <SanebaviManager 
                   properties={properties}
                   tenants={tenants}
+                  waterBills={waterBills}
+                  loading={waterBillsLoading}
+                  error={waterBillsError}
+                  onAddWaterBill={addWaterBill}
+                  onUpdateWaterBill={updateWaterBill}
+                  onDeleteWaterBill={deleteWaterBill}
+                  recarregarDados={reloadWaterBills}
                   showFinancialValues={showFinancialValues}
                 />
               } />
