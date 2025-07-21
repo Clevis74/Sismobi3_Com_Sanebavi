@@ -5,33 +5,41 @@ import { TransactionForm } from './TransactionForm';
 import { formatCurrencyWithVisibility, formatDate } from '../../utils/calculations';
 import { useActivation } from '../../contexts/ActivationContext';
 import { LoadingButton, LoadingOverlay } from '../UI/LoadingSpinner';
-import { HighlightCard, AnimatedListItem } from '../UI/HighlightCard';
+import { useConfirmationModal } from '../UI/ConfirmationModal';
+import { useEnhancedToast } from '../UI/EnhancedToast';
 
 interface TransactionManagerProps {
   transactions: Transaction[];
+  loading?: boolean;
+  error?: Error | null;
   properties: any[];
   showFinancialValues: boolean;
-  onAddTransaction: (transaction: Omit<Transaction, 'id'>) => void;
-  onUpdateTransaction: (id: string, transaction: Partial<Transaction>) => void;
-  onDeleteTransaction: (id: string) => void;
+  onAddTransaction: (transaction: Omit<Transaction, 'id'>) => Promise<boolean>;
+  onUpdateTransaction: (id: string, transaction: Partial<Transaction>) => Promise<boolean>;
+  onDeleteTransaction: (id: string) => Promise<boolean>;
+  onReload?: () => void;
 }
 
 export const TransactionManager: React.FC<TransactionManagerProps> = ({
   transactions,
+  loading: externalLoading = false,
+  error: externalError = null,
   properties,
   showFinancialValues,
   onAddTransaction,
   onUpdateTransaction,
-  onDeleteTransaction
+  onDeleteTransaction,
+  onReload
 }) => {
   const { isDemoMode } = useActivation();
   const [showForm, setShowForm] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [filter, setFilter] = useState<'all' | 'income' | 'expense'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [loading, setLoading] = useState(false);
-  const [highlightedId, setHighlightedId] = useState<string | null>(null);
-  const [newItemId, setNewItemId] = useState<string | null>(null);
+  const [internalLoading, setInternalLoading] = useState(false);
+
+  const { showConfirmation, ConfirmationModalComponent } = useConfirmationModal();
+  const toast = useEnhancedToast();
 
   // Configurações do modo DEMO
   const DEMO_LIMITS = {
@@ -39,32 +47,25 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
   };
 
   const isAtDemoLimit = isDemoMode && transactions.length >= DEMO_LIMITS.maxTransactions;
+  
+  // Combinar estados de loading
+  const loading = externalLoading || internalLoading;
 
-  const handleAddTransaction = (transactionData: Omit<Transaction, 'id'>) => {
+  const handleAddTransaction = async (transactionData: Omit<Transaction, 'id'>) => {
     if (isAtDemoLimit) {
+      toast.demoLimit('transações', DEMO_LIMITS.maxTransactions);
       return; // Não permite adicionar se estiver no limite do demo
     }
-    setLoading(true);
+    setInternalLoading(true);
     
-    // Simular operação assíncrona
-    setTimeout(() => {
-      const newTransaction = {
-        ...transactionData,
-        id: Date.now().toString()
-      };
-      
-      onAddTransaction(transactionData);
-      setShowForm(false);
-      setLoading(false);
-      
-      // Destacar o novo item
-      setHighlightedId(newTransaction.id);
-      setNewItemId(newTransaction.id);
-      
-      // Limpar destaque após 3 segundos
-      setTimeout(() => setHighlightedId(null), 3000);
-      setTimeout(() => setNewItemId(null), 1000);
-    }, 800);
+    try {
+      const success = await onAddTransaction(transactionData);
+      if (success) {
+        setShowForm(false);
+      }
+    } finally {
+      setInternalLoading(false);
+    }
   };
 
   const handleEditTransaction = (transaction: Transaction) => {
@@ -72,23 +73,66 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
     setShowForm(true);
   };
 
-  const handleUpdateTransaction = (transactionData: Omit<Transaction, 'id'>) => {
+  const handleUpdateTransaction = async (transactionData: Omit<Transaction, 'id'>) => {
     if (editingTransaction) {
-      setLoading(true);
+      setInternalLoading(true);
       
-      // Simular operação assíncrona
-      setTimeout(() => {
-        onUpdateTransaction(editingTransaction.id, transactionData);
-        setEditingTransaction(null);
-        setShowForm(false);
-        setLoading(false);
-        
-        // Destacar o item editado
-        setHighlightedId(editingTransaction.id);
-        setTimeout(() => setHighlightedId(null), 3000);
-      }, 600);
+      try {
+        const success = await onUpdateTransaction(editingTransaction.id, transactionData);
+        if (success) {
+          setEditingTransaction(null);
+          setShowForm(false);
+        }
+      } finally {
+        setInternalLoading(false);
+      }
     }
   };
+
+  const handleDeleteTransaction = (transaction: Transaction) => {
+    showConfirmation({
+      title: 'Excluir Transação',
+      message: `Tem certeza que deseja excluir a transação "${transaction.category} - ${transaction.description}"? Esta ação não pode ser desfeita.`,
+      confirmText: 'Excluir',
+      type: 'danger',
+      onConfirm: async () => {
+        const success = await onDeleteTransaction(transaction.id);
+        if (success) {
+          toast.deleted('Transação');
+        }
+      }
+    });
+  };
+
+  // Mostrar erro se houver
+  if (externalError) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-gray-900">Gestão de Transações</h2>
+          {onReload && (
+            <LoadingButton
+              loading={loading}
+              onClick={onReload}
+              variant="secondary"
+            >
+              Tentar Novamente
+            </LoadingButton>
+          )}
+        </div>
+        
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 flex items-center space-x-3">
+          <div className="w-6 h-6 text-red-600 flex-shrink-0">⚠️</div>
+          <div>
+            <h3 className="text-red-800 font-medium">Erro ao carregar transações</h3>
+            <p className="text-red-600 text-sm mt-1">
+              {externalError instanceof Error ? externalError.message : 'Erro desconhecido'}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const filteredTransactions = transactions.filter(transaction => {
     const typeMatch = filter === 'all' || transaction.type === filter;
@@ -111,13 +155,33 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Gestão de Transações</h2>
-          {isDemoMode && (
+          {isDemoMode ? (
             <p className="text-sm text-orange-600 mt-1">
               Modo DEMO: {transactions.length}/{DEMO_LIMITS.maxTransactions} transações utilizadas
+            </p>
+          ) : (
+            <p className="text-gray-600 mt-1">
+              {loading && transactions.length === 0 ? (
+                <span className="flex items-center space-x-2">
+                  <div className="w-4 h-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+                  <span>Carregando transações...</span>
+                </span>
+              ) : (
+                `${transactions.length} transação${transactions.length !== 1 ? 'ões' : ''} cadastrada${transactions.length !== 1 ? 's' : ''}`
+              )}
             </p>
           )}
         </div>
         <div className="flex flex-col items-end space-y-2">
+          {onReload && (
+            <LoadingButton
+              loading={loading}
+              onClick={onReload}
+              variant="secondary"
+            >
+              Recarregar
+            </LoadingButton>
+          )}
           <LoadingButton
             loading={loading}
             onClick={() => setShowForm(true)}
@@ -272,7 +336,7 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => onDeleteTransaction(transaction.id)}
+                          onClick={() => handleDeleteTransaction(transaction)}
                           disabled={loading}
                           className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                         >
@@ -289,12 +353,14 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
         </div>
       </LoadingOverlay>
 
-      {filteredTransactions.length === 0 && (
+      {!loading && filteredTransactions.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">Nenhuma transação encontrada</p>
           <p className="text-gray-400 mt-2">Comece adicionando sua primeira transação</p>
         </div>
       )}
+      
+      {ConfirmationModalComponent}
     </div>
   );
 };
