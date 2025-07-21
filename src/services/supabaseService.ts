@@ -8,7 +8,25 @@ export const propertyService = {
   async getAll() {
     const { data, error } = await supabase
       .from('properties')
-      .select('*')
+      .select(`
+        *,
+        tenants (
+          id,
+          name,
+          email,
+          cpf,
+          phone,
+          start_date,
+          agreed_payment_date,
+          monthly_rent,
+          deposit,
+          payment_method,
+          installments,
+          deposit_paid_installments,
+          formalized_contract,
+          status
+        )
+      `)
       .order('created_at', { ascending: false });
     
     if (error) throw error;
@@ -501,6 +519,29 @@ export const waterBillService = {
 export const mappers = {
   // Converter propriedade do Supabase para o formato da aplicação
   propertyFromSupabase(data: any): Property {
+    // Converter dados do inquilino se existir
+    let tenant: Tenant | undefined = undefined;
+    if (data.tenants && Array.isArray(data.tenants) && data.tenants.length > 0) {
+      const tenantData = data.tenants[0]; // Pegar o primeiro inquilino (deveria ser único)
+      tenant = {
+        id: tenantData.id,
+        propertyId: data.id,
+        name: tenantData.name,
+        email: tenantData.email,
+        cpf: tenantData.cpf,
+        phone: tenantData.phone,
+        startDate: new Date(tenantData.start_date),
+        agreedPaymentDate: tenantData.agreed_payment_date ? new Date(tenantData.agreed_payment_date) : undefined,
+        monthlyRent: tenantData.monthly_rent,
+        deposit: tenantData.deposit,
+        paymentMethod: tenantData.payment_method,
+        installments: tenantData.installments,
+        depositPaidInstallments: tenantData.deposit_paid_installments,
+        formalizedContract: tenantData.formalized_contract,
+        status: tenantData.status
+      };
+    }
+
     return {
       id: data.id,
       name: data.name,
@@ -511,7 +552,7 @@ export const mappers = {
       rentValue: data.rent_value,
       status: data.status,
       createdAt: new Date(data.created_at),
-      // tenant será preenchido separadamente quando necessário
+      tenant: tenant
     };
   },
 

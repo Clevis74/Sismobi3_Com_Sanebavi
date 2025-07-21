@@ -220,7 +220,19 @@ export function useProperties(supabaseAvailable: boolean = false) {
   // Função para atualizar propriedade
   const updateProperty = async (id: string, updates: Partial<Property>): Promise<boolean> => {
     try {
+      // Se estamos atualizando o status da propriedade para 'rented' ou 'vacant',
+      // precisamos recarregar os dados para obter as informações atualizadas do inquilino
+      const shouldReloadAfterUpdate = updates.status && (updates.status === 'rented' || updates.status === 'vacant');
+      
       await updateMutation.mutateAsync({ id, updates });
+      
+      // Recarregar dados se necessário para sincronizar com mudanças de inquilino
+      if (shouldReloadAfterUpdate && supabaseAvailable) {
+        setTimeout(() => {
+          refetch();
+        }, 500);
+      }
+      
       return true;
     } catch (error) {
       // Erro já tratado na mutation
