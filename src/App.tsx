@@ -81,7 +81,23 @@ function AppContent() {
                   showFinancialValues={showFinancialValues}
                 />
               } />
-              <Route path="/properties" element={<PropertyManager />} />
+              <Route path="/properties" element={
+                <PropertyManager 
+                  properties={properties}
+                  onAddProperty={(property) => {
+                    // TODO: Implement add property functionality
+                    console.log('Add property:', property);
+                  }}
+                  onEditProperty={(property) => {
+                    // TODO: Implement edit property functionality
+                    console.log('Edit property:', property);
+                  }}
+                  onDeleteProperty={(id) => {
+                    // TODO: Implement delete property functionality
+                    console.log('Delete property:', id);
+                  }}
+                />
+              } />
               <Route path="/tenants" element={<TenantManager />} />
               <Route path="/transactions" element={<TransactionManager />} />
               <Route path="/documents" element={<DocumentManager />} />
