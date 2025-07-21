@@ -261,6 +261,7 @@ export function useTenants(supabaseAvailable: boolean = false) {
     updateTenant,
     deleteTenant,
     recarregarDados,
+    setLocalTenants,
     
     // Informações adicionais
     temDados: tenants.length > 0,

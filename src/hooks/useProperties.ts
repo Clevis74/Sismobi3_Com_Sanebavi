@@ -275,6 +275,7 @@ export function useProperties(supabaseAvailable: boolean = false) {
     updateProperty,
     deleteProperty,
     recarregarDados,
+    setLocalProperties,
     
     // Informações adicionais
     temDados: properties.length > 0,
