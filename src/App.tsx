@@ -5,18 +5,18 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import { ActivationProvider } from './contexts/ActivationContext';
-import Header from './components/Layout/Header';
-import Sidebar from './components/Layout/Sidebar';
-import SyncIndicator from './components/Layout/SyncIndicator';
+import { Header } from './components/Layout/Header';
+import { Sidebar } from './components/Layout/Sidebar';
+import { SyncIndicator } from './components/Layout/SyncIndicator';
 import { Dashboard } from './components/Dashboard/Dashboard';
-import PropertyManager from './components/Properties/PropertyManager';
-import TenantManager from './components/Tenants/TenantManager';
-import TransactionManager from './components/Transactions/TransactionManager';
-import DocumentManager from './components/Documents/DocumentManager';
-import ReportManager from './components/Reports/ReportManager';
-import EnergyCalculator from './components/Energy/EnergyCalculator';
-import SanebaviManager from './components/Sanebavi/SanebaviManager';
-import InformorsManager from './components/Informors/InformorsManager';
+import { PropertyManager } from './components/Properties/PropertyManager';
+import { TenantManager } from './components/Tenants/TenantManager';
+import { TransactionManager } from './components/Transactions/TransactionManager';
+import { DocumentManager } from './components/Documents/DocumentManager';
+import { ReportManager } from './components/Reports/ReportManager';
+import { EnergyCalculator } from './components/Energy/EnergyCalculator';
+import { SanebaviManager } from './components/Sanebavi/SanebaviManager';
+import { InformorsManager } from './components/Informors/InformorsManager';
 import { ActivationForm } from './components/Activation/ActivationForm';
 
 const queryClient = new QueryClient({
