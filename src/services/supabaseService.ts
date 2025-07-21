@@ -173,7 +173,7 @@ export const transactionService = {
         type: transaction.type,
         category: transaction.category,
         amount: transaction.amount,
-        description: transaction.description,
+        description: transaction.description || null, // Allow null for description
         date: transaction.date.toISOString(),
         recurring: transaction.recurring || null,
         // created_at will be automatically set by Supabase
@@ -193,7 +193,7 @@ export const transactionService = {
     if (updates.type) updateData.type = updates.type;
     if (updates.category) updateData.category = updates.category;
     if (updates.amount !== undefined) updateData.amount = updates.amount;
-    if (updates.description) updateData.description = updates.description;
+    if (updates.description !== undefined) updateData.description = updates.description || null; // Allow null for description
     if (updates.date) updateData.date = updates.date.toISOString();
     // Ensure recurring is explicitly set to null if undefined, otherwise Supabase might not update it
     updateData.recurring = updates.recurring === undefined ? null : updates.recurring;
