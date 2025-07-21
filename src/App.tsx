@@ -120,6 +120,27 @@ function AppContent() {
                 />
               } />
               <Route path="/transactions" element={<TransactionManager />} />
+              <Route path="/transactions" element={
+                <TransactionManager 
+                  transactions={transactions}
+                  properties={properties}
+                  showFinancialValues={showFinancialValues}
+                  onAddTransaction={(transaction) => {
+                    // TODO: Implement add transaction functionality
+                    console.log('Add transaction:', transaction);
+                  }}
+                  onUpdateTransaction={(transaction) => {
+                    // TODO: Implement update transaction functionality
+                    console.log('Update transaction:', transaction);
+                  }}
+                  onDeleteTransaction={(id) => {
+                    // TODO: Implement delete transaction functionality
+                    console.log('Delete transaction:', id);
+                  }}
+                  loading={false}
+                  error={null}
+                />
+              } />
               <Route path="/documents" element={<DocumentManager />} />
               <Route path="/reports" element={<ReportManager />} />
               <Route path="/energy" element={<EnergyCalculator />} />
