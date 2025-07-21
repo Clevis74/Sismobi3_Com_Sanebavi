@@ -125,6 +125,22 @@ export function useSyncManager() {
         }
       }
       
+      if (change.entity === 'transactions') {
+        const { transactionService } = await import('../services/supabaseService');
+        
+        switch (change.type) {
+          case 'create':
+            await transactionService.create(change.data);
+            break;
+          case 'update':
+            await transactionService.update(change.data.id, change.data);
+            break;
+          case 'delete':
+            await transactionService.delete(change.data.id);
+            break;
+        }
+      }
+      
       return true;
     } catch (error) {
       console.error(`Erro ao sincronizar mudança ${change.id}:`, error);
