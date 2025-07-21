@@ -288,3 +288,5 @@ export function useInformors(supabaseAvailable?: boolean) {
     
     // Informações adicionais
     temDados: informors.length > 0,
+  }
+}
