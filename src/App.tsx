@@ -145,7 +145,9 @@ function AppContent() {
 
   const handleExport = () => {
     // TODO: Implement export functionality
-    console.log('Export functionality to be implemented');
+    const { downloadBackup } = require('./utils/backup');
+    downloadBackup();
+    toast.success('Backup exportado com sucesso!');
   };
 
   const handleImport = () => {
