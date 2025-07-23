@@ -3,6 +3,7 @@ import { DollarSign, TrendingUp, Home, Percent } from 'lucide-react';
 import { MetricCard } from './MetricCard';
 import { TransactionChart } from './TransactionChart';
 import { PropertyList } from './PropertyList';
+import { NotificationDemo } from '../Notifications/NotificationDemo';
 import { FinancialSummary } from '../../types';
 import { formatCurrencyWithVisibility } from '../../utils/calculations';
 
