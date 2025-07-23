@@ -12,6 +12,7 @@ interface DashboardProps {
   properties: any[];
   transactions: any[];
   showFinancialValues: boolean;
+  onAddTenant?: (tenant: any) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ summary, properties, transactions, showFinancialValues }) => {
