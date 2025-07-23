@@ -15,7 +15,13 @@ interface DashboardProps {
   onAddTenant?: (tenant: any) => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ summary, properties, transactions, showFinancialValues }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ 
+  summary, 
+  properties, 
+  transactions, 
+  showFinancialValues,
+  onAddTenant 
+}) => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
