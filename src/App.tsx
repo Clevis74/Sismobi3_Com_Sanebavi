@@ -26,8 +26,13 @@ import { useEnergyBills } from './hooks/useEnergyBills';
 import { useWaterBills } from './hooks/useWaterBills';
 import { useConfirmationModal } from './components/UI/ConfirmationModal';
 import { useEnhancedToast } from './components/UI/EnhancedToast';
+import { useSyncManager } from './hooks/useSyncManager';
+import { useLocalStorage } from './hooks/useLocalStorage';
 import { testConnection } from './lib/supabaseClient';
 import { calculateFinancialSummary } from './utils/calculations';
+import { importBackup } from './utils/backup';
+import { Property, Tenant, Transaction, Document, EnergyBill, WaterBill } from './types';
+import { Informor } from './types/informor';
 import { useState } from 'react';
 
 const queryClient = new QueryClient({
