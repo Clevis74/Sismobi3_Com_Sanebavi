@@ -24,6 +24,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
 }) => {
   return (
     <div className="space-y-6">
+      {/* Componente de demonstração de notificações */}
+      {onAddTenant && (
+        <NotificationDemo 
+          tenants={[]} // Será preenchido via hook
+          properties={properties}
+          onAddTenant={onAddTenant}
+        />
+      )}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Receita Mensal"
