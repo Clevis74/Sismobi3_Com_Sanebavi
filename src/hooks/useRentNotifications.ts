@@ -72,11 +72,17 @@ export function useRentNotifications(
 
   // Detectar atrasos e criar notificações
   const checkOverdueRents = useCallback(async () => {
-    if (isChecking || tenants.length === 0) return;
+    if (isChecking) return;
     
     setIsChecking(true);
     
     try {
+      // Só proceder se há dados
+      if (tenants.length === 0 || properties.length === 0) {
+        toast.info('Nenhum inquilino ou propriedade cadastrada');
+        return;
+      }
+      
       const overdueNotifications: RentOverdueNotification[] = [];
       const newSystemNotifications: SystemNotification[] = [];
       
@@ -162,12 +168,14 @@ export function useRentNotifications(
   }, [
     tenants, 
     properties, 
-    settings, 
-    notifications, 
+    settings.triggerDays, 
+    settings.enabledChannels,
     calculateDaysOverdue, 
     wasNotifiedToday,
-    isChecking
-  ]);
+    isChecking,
+    setNotifications,
+    setSystemNotifications
+  ]); // Dependências otimizadas
 
   // Marcar notificação do sistema como resolvida
   const markAsResolved = useCallback((notificationId: string) => {
