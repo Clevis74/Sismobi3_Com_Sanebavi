@@ -214,6 +214,7 @@ function AppContent() {
                   properties={properties}
                   transactions={transactions}
                   showFinancialValues={showFinancialValues}
+                  onAddTenant={addTenant}
                 />
               } />
               <Route path="/properties" element={
