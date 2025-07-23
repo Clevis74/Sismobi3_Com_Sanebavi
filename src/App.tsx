@@ -53,6 +53,16 @@ function AppContent() {
   
   const { showConfirmation, ConfirmationModalComponent } = useConfirmationModal();
   const toast = useEnhancedToast();
+  const { performSync } = useSyncManager();
+
+  // Local storage hooks for managing offline data
+  const [, setLocalProperties] = useLocalStorage<Property[]>('properties', []);
+  const [, setLocalTenants] = useLocalStorage<Tenant[]>('tenants', []);
+  const [, setLocalTransactions] = useLocalStorage<Transaction[]>('transactions', []);
+  const [, setLocalDocuments] = useLocalStorage<Document[]>('documents', []);
+  const [, setLocalEnergyBills] = useLocalStorage<EnergyBill[]>('energyBills', []);
+  const [, setLocalWaterBills] = useLocalStorage<WaterBill[]>('waterBills', []);
+  const [, setLocalInformors] = useLocalStorage<Informor[]>('informors', []);
 
   // Verificar disponibilidade do Supabase
   React.useEffect(() => {
