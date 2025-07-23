@@ -19,7 +19,9 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleFinancialValues, 
   onToggleTheme,
   onExport, 
-  onImport 
+  onImport,
+  tenants = [],
+  properties = []
 }) => {
   const { isDemoMode } = useActivation();
 
