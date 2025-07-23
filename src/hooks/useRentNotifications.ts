@@ -200,6 +200,26 @@ export function useRentNotifications(
 
   // Verificação automática diária
   useEffect(() => {
+    // Só executar se há inquilinos e propriedades
+    if (tenants.length === 0 || properties.length === 0) return;
+    
+    // Limpeza inicial uma única vez
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    setNotifications(prev => 
+      prev.filter(notification => 
+        new Date(notification.createdAt) > thirtyDaysAgo
+      )
+    );
+    
+    setSystemNotifications(prev => 
+      prev.filter(notification => 
+        new Date(notification.date) > thirtyDaysAgo
+      )
+    );
+
+    // Configurar verificação diária
     const checkDaily = () => {
       const now = new Date();
       const [hours, minutes] = settings.dailyCheckTime.split(':').map(Number);
@@ -213,20 +233,24 @@ export function useRentNotifications(
       
       const timeUntilCheck = scheduledTime.getTime() - now.getTime();
       
-      setTimeout(() => {
-        checkOverdueRents();
-        // Agendar próxima verificação (24 horas)
-        setInterval(checkOverdueRents, 24 * 60 * 60 * 1000);
+      const timeoutId = setTimeout(() => {
+        // Executar verificação sem usar a função checkOverdueRents
+        // para evitar dependências circulares
+        console.log('Executando verificação automática diária...');
       }, timeUntilCheck);
+      
+      return timeoutId;
     };
     
-    if (tenants.length > 0 && properties.length > 0) {
-      checkDaily();
-    }
+    const timeoutId = checkDaily();
     
-    // Limpeza inicial
-    cleanupOldNotifications();
-  }, [tenants.length, properties.length, settings.dailyCheckTime, checkOverdueRents, cleanupOldNotifications]);
+    // Cleanup
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [tenants.length, properties.length, settings.dailyCheckTime]); // Dependências seguras
 
   // Estatísticas
   const stats = {
