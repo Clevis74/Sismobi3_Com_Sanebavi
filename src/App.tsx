@@ -152,7 +152,7 @@ function AppContent() {
 
   const handleImport = () => {
     if (!isActivated) {
-      toast.warning('Funcionalidade disponível apenas na versão completa');
+      toast.importDisabled();
       return;
     }
     

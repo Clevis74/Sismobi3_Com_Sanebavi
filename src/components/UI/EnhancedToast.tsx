@@ -143,6 +143,18 @@ export const enhancedToast = {
         }
       }
     });
+  },
+
+  importDisabled: () => {
+    enhancedToast.warning('📥 A importação de backup está disponível apenas na versão completa. Ative o sistema para liberar esta funcionalidade!', {
+      autoClose: 6000,
+      action: {
+        label: '🔓 Ativar Agora',
+        onClick: () => {
+          window.dispatchEvent(new CustomEvent('navigate-to-activation'));
+        }
+      }
+    });
   }
 };
 
