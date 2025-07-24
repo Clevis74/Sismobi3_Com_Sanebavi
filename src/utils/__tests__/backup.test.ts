@@ -68,6 +68,9 @@ describe('📦 Backup Utils', () => {
     it('should handle invalid JSON in localStorage', () => {
       mockLocalStorage.getItem.mockReturnValue('invalid-json');
 
+      // O exportBackup deve tratar graciosamente JSON inválido
+      expect(() => exportBackup()).not.toThrow();
+      
       const backup = exportBackup();
 
       // Deve usar arrays vazios como fallback
