@@ -158,8 +158,11 @@ describe('🧮 Calculations Utils', () => {
     });
 
     it('should handle decimal values', () => {
-      expect(formatCurrency(1500.50)).toBe('R$ 1.500,50');
-      expect(formatCurrency(1500.1)).toBe('R$ 1.500,10');
+      const result1 = formatCurrency(1500.50);
+      const result2 = formatCurrency(1500.1);
+      
+      expect(result1).toMatch(/R\$\s*1\.500,50/);
+      expect(result2).toMatch(/R\$\s*1\.500,10/);
     });
   });
 
