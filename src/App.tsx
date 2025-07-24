@@ -18,6 +18,7 @@ import { EnergyCalculator } from './components/Energy/EnergyCalculator';
 import { SanebaviManager } from './components/Sanebavi/SanebaviManager';
 import { InformorsManager } from './components/Informors/InformorsManager';
 import { ActivationForm } from './components/Activation/ActivationForm';
+import { CreditConsumptionPanel } from './components/CreditConsumption/CreditConsumptionPanel';
 import { useProperties } from './hooks/useProperties';
 import { useTenants } from './hooks/useTenants';
 import { useTransactions } from './hooks/useTransactions';
