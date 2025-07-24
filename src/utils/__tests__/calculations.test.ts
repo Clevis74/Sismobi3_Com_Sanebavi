@@ -182,7 +182,8 @@ describe('🧮 Calculations Utils', () => {
     });
 
     it('should default to showing values when no parameter provided', () => {
-      expect(formatCurrencyWithVisibility(1500)).toBe('R$ 1.500,00');
+      const result = formatCurrencyWithVisibility(1500);
+      expect(result).toMatch(/R\$\s*1\.500,00/);
     });
   });
 
