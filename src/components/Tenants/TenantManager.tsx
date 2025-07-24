@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, User, Phone, Mail, Calendar, Users } from 'lucide-react';
+import { Plus, Edit, Trash2, User, Phone, Mail, Calendar, Users, FileText } from 'lucide-react';
 import { Tenant } from '../../types';
 import { TenantForm } from './TenantForm';
 import { formatDate, formatCurrencyWithVisibility } from '../../utils/calculations';
@@ -118,6 +118,41 @@ export const TenantManager: React.FC<TenantManagerProps> = ({
     });
   };
 
+  const handleGenerateContract = (tenant: Tenant) => {
+    // Encontrar a propriedade vinculada ao inquilino
+    const linkedProperty = properties.find(p => p.id === tenant.propertyId);
+    
+    if (!linkedProperty) {
+      toast.error('Propriedade não encontrada para este inquilino');
+      return;
+    }
+
+    // Log dos dados para verificação (será substituído pela geração real do contrato)
+    console.log('=== DADOS PARA GERAÇÃO DO CONTRATO ===');
+    console.log('Inquilino:', {
+      nome: tenant.name,
+      email: tenant.email,
+      cpf: tenant.cpf,
+      telefone: tenant.phone,
+      dataInicio: tenant.startDate,
+      dataVencimento: tenant.agreedPaymentDate,
+      valorAluguel: tenant.monthlyRent,
+      valorCaucao: tenant.deposit,
+      formaPagamento: tenant.paymentMethod,
+      contratoFormalizado: tenant.formalizedContract
+    });
+    console.log('Propriedade:', {
+      nome: linkedProperty.name,
+      endereco: linkedProperty.address,
+      tipo: linkedProperty.type,
+      valorCompra: linkedProperty.purchasePrice,
+      valorAluguel: linkedProperty.rentValue
+    });
+    console.log('=====================================');
+    
+    // Placeholder para a funcionalidade real de geração
+    toast.info(`Contrato para ${tenant.name} - ${linkedProperty.name} será gerado em breve!`);
+  };
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800';
@@ -314,13 +349,23 @@ export const TenantManager: React.FC<TenantManagerProps> = ({
                         onClick={() => handleEditTenant(tenant)}
                         disabled={loading}
                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                        title="Editar inquilino"
                       >
                         <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleGenerateContract(tenant)}
+                        disabled={loading}
+                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
+                        title="Gerar contrato"
+                      >
+                        <FileText className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteTenant(tenant)}
                         disabled={loading}
                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                        title="Excluir inquilino"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
