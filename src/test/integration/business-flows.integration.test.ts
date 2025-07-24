@@ -143,7 +143,7 @@ describe('🏢 Business Flows Integration Tests', () => {
           category: 'Aluguel',
           amount: 1500,
           description: 'Aluguel Janeiro - Maria',
-          date: new Date(new Date().getFullYear(), 0, 5) // Janeiro do ano atual
+          date: new Date(new Date().getFullYear(), new Date().getMonth(), 5) // Mês atual
         },
         // Gap period expense
         {
