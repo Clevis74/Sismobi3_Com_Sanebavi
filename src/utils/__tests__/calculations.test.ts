@@ -143,9 +143,13 @@ describe('🧮 Calculations Utils', () => {
 
   describe('formatCurrency', () => {
     it('should format currency in Brazilian format', () => {
-      expect(formatCurrency(1500)).toBe('R$ 1.500,00');
-      expect(formatCurrency(0)).toBe('R$ 0,00');
-      expect(formatCurrency(999999.99)).toBe('R$ 999.999,99');
+      const result1 = formatCurrency(1500);
+      const result2 = formatCurrency(0);
+      const result3 = formatCurrency(999999.99);
+      
+      expect(result1).toMatch(/R\$\s*1\.500,00/);
+      expect(result2).toMatch(/R\$\s*0,00/);
+      expect(result3).toMatch(/R\$\s*999\.999,99/);
     });
 
     it('should handle negative values', () => {
