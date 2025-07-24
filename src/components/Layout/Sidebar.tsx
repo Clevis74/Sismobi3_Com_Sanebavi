@@ -28,6 +28,7 @@ const menuItems = [
   { id: '/sanebavi', label: 'Água (Sanebavi)', icon: Droplets },
   { id: '/documents', label: 'Documentos', icon: FileText },
   { id: '/informors', label: 'Informors', icon: Info },
+  { id: '/credit-consumption', label: 'Consumo de Créditos', icon: CreditCard },
   { id: '/activation', label: 'Ativação', icon: Shield },
   { id: '/settings', label: 'Configurações', icon: Settings },
 ];
