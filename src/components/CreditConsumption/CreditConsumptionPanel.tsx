@@ -265,3 +265,4 @@ const CreditConsumptionPanel: React.FC = () => {
 };
 
 export default CreditConsumptionPanel;
+export { CreditConsumptionPanel };
