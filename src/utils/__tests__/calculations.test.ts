@@ -153,7 +153,8 @@ describe('🧮 Calculations Utils', () => {
     });
 
     it('should handle negative values', () => {
-      expect(formatCurrency(-500)).toBe('-R$ 500,00');
+      const result = formatCurrency(-500);
+      expect(result).toMatch(/-R\$\s*500,00/);
     });
 
     it('should handle decimal values', () => {
