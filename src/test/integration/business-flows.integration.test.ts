@@ -47,7 +47,7 @@ describe('🏢 Business Flows Integration Tests', () => {
         tenant
       };
 
-      // 3. Create Transactions
+      const currentDate = new Date();
       const transactions: Transaction[] = [
         {
           id: 'trans-1',
@@ -56,10 +56,10 @@ describe('🏢 Business Flows Integration Tests', () => {
           category: 'Aluguel',
           amount: 1800,
           description: 'Aluguel mensal - Janeiro',
-          date: new Date('2024-01-05'),
+          date: new Date(currentDate.getFullYear(), currentDate.getMonth(), 5),
           recurring: {
             frequency: 'monthly',
-            nextDate: new Date('2024-02-05')
+            nextDate: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 5)
           }
         },
         {
@@ -69,7 +69,7 @@ describe('🏢 Business Flows Integration Tests', () => {
           category: 'Caução',
           amount: 3600,
           description: 'Depósito caução',
-          date: new Date('2024-01-15')
+          date: new Date(currentDate.getFullYear(), currentDate.getMonth(), 15)
         },
         {
           id: 'trans-3',
@@ -78,7 +78,7 @@ describe('🏢 Business Flows Integration Tests', () => {
           category: 'Manutenção',
           amount: 150,
           description: 'Reparo torneira',
-          date: new Date('2024-01-20')
+          date: new Date(currentDate.getFullYear(), currentDate.getMonth(), 20)
         }
       ];
 
