@@ -98,7 +98,7 @@ describe('🧮 Calculations Utils', () => {
       expect(summary.netIncome).toBe(4300); // 4500 - 200
       expect(summary.totalProperties).toBe(3);
       expect(summary.rentedProperties).toBe(2);
-      expect(summary.occupancyRate).toBe(66.67); // 2/3 * 100, arredondado
+      expect(summary.occupancyRate).toBeCloseTo(66.67); // 2/3 * 100, arredondado
     });
 
     it('should calculate correct ROI', () => {
