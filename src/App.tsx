@@ -321,6 +321,7 @@ function AppContent() {
                 />
               } />
               <Route path="/informors" element={<InformorsManager />} />
+              <Route path="/credit-consumption" element={<CreditConsumptionPanel />} />
               <Route path="/activation" element={<ActivationForm />} />
             </Routes>
           </div>
