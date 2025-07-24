@@ -167,9 +167,10 @@ describe('🏢 Business Flows Integration Tests', () => {
         }
       ];
 
-      // Test current month summary (assuming we're in January)
+      // Test current month summary
+      const now = new Date();
       const currentMonthSummary = calculateFinancialSummary([property], 
-        transactions.filter(t => t.date.getMonth() === 0) // January transactions
+        transactions.filter(t => t.date.getMonth() === now.getMonth() && t.date.getFullYear() === now.getFullYear())
       );
 
       expect(currentMonthSummary.totalIncome).toBe(1500);
