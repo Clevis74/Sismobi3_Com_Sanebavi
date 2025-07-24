@@ -16,13 +16,22 @@ export interface BackupData {
 
 // Função para exportar dados para backup
 export const exportBackup = (): BackupData => {
-  const properties = JSON.parse(localStorage.getItem('properties') || '[]');
-  const tenants = JSON.parse(localStorage.getItem('tenants') || '[]');
-  const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
-  const documents = JSON.parse(localStorage.getItem('documents') || '[]');
-  const energyBills = JSON.parse(localStorage.getItem('energyBills') || '[]');
-  const waterBills = JSON.parse(localStorage.getItem('waterBills') || '[]');
-  const informors = JSON.parse(localStorage.getItem('informors') || '[]');
+  const getStorageItem = (key: string): any[] => {
+    try {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const properties = getStorageItem('properties');
+  const tenants = getStorageItem('tenants');
+  const transactions = getStorageItem('transactions');
+  const documents = getStorageItem('documents');
+  const energyBills = getStorageItem('energyBills');
+  const waterBills = getStorageItem('waterBills');
+  const informors = getStorageItem('informors');
 
   return {
     properties,
