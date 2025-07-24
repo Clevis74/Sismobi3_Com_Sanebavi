@@ -246,7 +246,73 @@ export type Database = {
           properties_in_group?: Json;
         };
       };
-      // Mais tabelas serão adicionadas conforme necessário
+      
+      energy_bills: {
+        Row: {
+          id: string;
+          date: string;
+          observations: string | null;
+          is_paid: boolean;
+          created_at: string;
+          last_updated: string;
+          group_id: string;
+          group_name: string;
+          total_group_value: number;
+          total_group_consumption: number;
+          properties_in_group: Json; // Stores SharedPropertyConsumption[]
+        };
+        Insert: {
+          id?: string;
+          date: string;
+          observations?: string | null;
+          is_paid?: boolean;
+          created_at?: string;
+          last_updated?: string;
+          group_id: string;
+          group_name: string;
+          total_group_value: number;
+          total_group_consumption: number;
+          properties_in_group: Json;
+        };
+        Update: {
+          id?: string;
+          date?: string;
+          observations?: string | null;
+          is_paid?: boolean;
+          created_at?: string;
+          last_updated?: string;
+          group_id?: string;
+          group_name?: string;
+          total_group_value?: number;
+          total_group_consumption?: number;
+          properties_in_group?: Json;
+        };
+      };
+
+      informors: {
+        Row: {
+          id: string;
+          nome: string;
+          valor: number;
+          vencimento: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          nome: string;
+          valor: number;
+          vencimento: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          nome?: string;
+          valor?: number;
+          vencimento?: string;
+          created_at?: string;
+        };
+      };
+      // Todas as tabelas do schema estão agora completamente definidas
     };
     Views: {
       [_ in never]: never;
