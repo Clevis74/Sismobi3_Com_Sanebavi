@@ -12,7 +12,8 @@ import {
   FileText,
   Droplets,
   Info,
-  Shield
+  Shield,
+  CreditCard
 } from 'lucide-react';
 
 
