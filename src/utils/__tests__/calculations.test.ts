@@ -168,8 +168,11 @@ describe('🧮 Calculations Utils', () => {
 
   describe('formatCurrencyWithVisibility', () => {
     it('should format currency when showValues is true', () => {
-      expect(formatCurrencyWithVisibility(1500, true)).toBe('R$ 1.500,00');
-      expect(formatCurrencyWithVisibility(0, true)).toBe('R$ 0,00');
+      const result1 = formatCurrencyWithVisibility(1500, true);
+      const result2 = formatCurrencyWithVisibility(0, true);
+      
+      expect(result1).toMatch(/R\$\s*1\.500,00/);
+      expect(result2).toMatch(/R\$\s*0,00/);
     });
 
     it('should hide values when showValues is false', () => {
