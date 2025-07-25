@@ -21,19 +21,19 @@ import { SimpleModeToggle } from '../UI/SimpleModeToggle';
 
 
 const menuItems = [
-  { id: '/', label: 'Dashboard', icon: Home },
-  { id: '/properties', label: 'Propriedades', icon: Building },
-  { id: '/tenants', label: 'Inquilinos', icon: Users },
-  { id: '/transactions', label: 'Transações', icon: DollarSign },
-  { id: '/reports', label: 'Relatórios', icon: TrendingUp },
-  { id: '/alerts', label: 'Alertas', icon: Bell },
-  { id: '/energy', label: 'Energia (CPFL)', icon: Zap },
-  { id: '/sanebavi', label: 'Água (Sanebavi)', icon: Droplets },
-  { id: '/documents', label: 'Documentos', icon: FileText },
-  { id: '/informors', label: 'Informors', icon: Info },
-  { id: '/credit-consumption', label: 'Consumo de Créditos', icon: CreditCard },
-  { id: '/activation', label: 'Ativação', icon: Shield },
-  { id: '/settings', label: 'Configurações', icon: Settings },
+  { id: '/', label: 'Dashboard', icon: Home, isBasic: true },
+  { id: '/properties', label: 'Propriedades', icon: Building, isBasic: true },
+  { id: '/tenants', label: 'Inquilinos', icon: Users, isBasic: true },
+  { id: '/transactions', label: 'Transações', icon: DollarSign, isBasic: true },
+  { id: '/reports', label: 'Relatórios', icon: TrendingUp, isBasic: true },
+  { id: '/alerts', label: 'Alertas', icon: Bell, isBasic: false },
+  { id: '/energy', label: 'Energia (CPFL)', icon: Zap, isBasic: false },
+  { id: '/sanebavi', label: 'Água (Sanebavi)', icon: Droplets, isBasic: false },
+  { id: '/documents', label: 'Documentos', icon: FileText, isBasic: false },
+  { id: '/informors', label: 'Informors', icon: Info, isBasic: false },
+  { id: '/credit-consumption', label: 'Consumo de Créditos', icon: CreditCard, isBasic: false },
+  { id: '/activation', label: 'Ativação', icon: Shield, isBasic: false },
+  { id: '/settings', label: 'Configurações', icon: Settings, isBasic: false },
 ];
 
 export const Sidebar: React.FC = () => {
