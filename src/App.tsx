@@ -86,6 +86,11 @@ function AppContent() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [supabaseAvailable, setSupabaseAvailable] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
+  const [showSetupWizard, setShowSetupWizard] = useState(() => {
+    // Verificar se é a primeira vez do usuário
+    const setupCompleted = localStorage.getItem('sismobi-setup-completed');
+    return !setupCompleted;
+  });
   
   const { showConfirmation, ConfirmationModalComponent } = useConfirmationModal();
   const toast = useEnhancedToast();
