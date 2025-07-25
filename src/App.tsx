@@ -40,9 +40,22 @@ import { useState } from 'react';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: 1,
+      staleTime: 10 * 60 * 1000, // 10 minutos - dados ficam "frescos" por mais tempo
+      gcTime: 30 * 60 * 1000, // 30 minutos - mantém no cache por mais tempo (antigo cacheTime)
+      refetchOnWindowFocus: false, // Não recarregar ao focar na janela
+      refetchOnReconnect: true, // Recarregar quando reconectar à internet
+      retry: (failureCount, error) => {
+        // Retry inteligente - menos tentativas para economizar recursos
+        if (failureCount < 2) {
+          return true;
+        }
+        return false;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Backoff exponencial
     },
+    mutations: {
+      retry: 1, // Apenas uma tentativa para mutações
+    }
   },
 });
 
