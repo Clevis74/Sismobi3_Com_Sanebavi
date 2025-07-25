@@ -9,6 +9,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { OnboardingProvider } from './contexts/OnboardingContext';
 import { NotificationProvider } from './components/UI/EnhancedNotifications';
 import { ActivationProvider, useActivation } from './contexts/ActivationContext';
+import { SimpleModeProvider, useSimpleMode } from './contexts/SimpleModeContext';
 import { Header } from './components/Layout/Header';
 import { Sidebar } from './components/Layout/Sidebar';
 import { SyncIndicator } from './components/Layout/SyncIndicator';
