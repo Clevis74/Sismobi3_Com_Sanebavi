@@ -382,22 +382,29 @@ function AppContent() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ActivationProvider>
-        <Router>
-          <AppContent />
-          <ToastContainer 
-            position="bottom-right" 
-            autoClose={5000} 
-            hideProgressBar={false} 
-            newestOnTop={false} 
-            closeOnClick 
-            rtl={false} 
-            pauseOnFocusLoss 
-            draggable 
-            pauseOnHover 
-          />
-        </Router>
-      </ActivationProvider>
+      <ThemeProvider>
+        <NotificationProvider>
+          <OnboardingProvider>
+            <ActivationProvider>
+              <Router>
+                <AppContent />
+                <ToastContainer 
+                  position="bottom-right" 
+                  autoClose={5000} 
+                  hideProgressBar={false} 
+                  newestOnTop={false} 
+                  closeOnClick 
+                  rtl={false} 
+                  pauseOnFocusLoss 
+                  draggable 
+                  pauseOnHover
+                  theme="colored"
+                />
+              </Router>
+            </ActivationProvider>
+          </OnboardingProvider>
+        </NotificationProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
