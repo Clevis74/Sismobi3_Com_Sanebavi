@@ -86,6 +86,9 @@ function AppContent() {
   const { showConfirmation, ConfirmationModalComponent } = useConfirmationModal();
   const toast = useEnhancedToast();
   const { performSync } = useSyncManager();
+  
+  // Atalhos de teclado
+  const { HelpComponent } = useAllKeyboardShortcuts();
 
   // Local storage hooks for managing offline data
   const [, setLocalProperties] = useLocalStorage<Property[]>('properties', []);
