@@ -3,6 +3,7 @@ import { Calendar, Download, Upload, Eye, EyeOff } from 'lucide-react';
 import { useActivation } from '../../contexts/ActivationContext';
 import { SyncIndicator } from './SyncIndicator';
 import { NotificationPanel } from '../Notifications/NotificationPanel';
+import { CompactSimpleModeToggle } from '../UI/SimpleModeToggle';
 
 interface HeaderProps {
   showFinancialValues: boolean;
