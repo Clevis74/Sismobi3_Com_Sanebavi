@@ -526,11 +526,93 @@ export const energyBillService = {
 
 // Serviços para Documents
 export const documentService = {
-  // Buscar todos os documentos
+  // Buscar todos os documentos (método legado - mantido para compatibilidade)
   async getAll() {
     const { data, error } = await supabase
       .from('documents')
       .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Buscar documentos com paginação (apenas metadados - sem file_url)
+  async getAllMetadata(offset: number = 0, limit: number = 20, filters?: {
+    propertyId?: string,
+    tenantId?: string,
+    type?: string,
+    status?: 'Válido' | 'Expirado' | 'Pendente' | 'Revisão'
+  }) {
+    let query = supabase
+      .from('documents')
+      .select(`
+        id,
+        type,
+        issue_date,
+        has_validity,
+        validity_date,
+        file_name,
+        observations,
+        property_id,
+        tenant_id,
+        status,
+        contract_signed,
+        last_updated
+      `, { count: 'exact' });
+
+    // Aplicar filtros se fornecidos
+    if (filters?.propertyId) {
+      query = query.eq('property_id', filters.propertyId);
+    }
+    if (filters?.tenantId) {
+      query = query.eq('tenant_id', filters.tenantId);
+    }
+    if (filters?.type) {
+      query = query.eq('type', filters.type);
+    }
+    if (filters?.status) {
+      query = query.eq('status', filters.status);
+    }
+
+    const { data, error, count } = await query
+      .range(offset, offset + limit - 1)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return { 
+      data: data || [], 
+      count: count || 0,
+      hasMore: (count || 0) > offset + limit 
+    };
+  },
+
+  // Buscar conteúdo do documento (lazy loading - apenas quando necessário)
+  async getDocumentContent(id: string) {
+    const { data, error } = await supabase
+      .from('documents')
+      .select('file_url, file_name')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Buscar documentos por propriedade (otimizado)
+  async getByPropertyId(propertyId: string, limit: number = 10) {
+    const { data, error } = await supabase
+      .from('documents')
+      .select(`
+        id,
+        type,
+        issue_date,
+        validity_date,
+        status,
+        file_name
+      `)
+      .eq('property_id', propertyId)
+      .limit(limit)
       .order('created_at', { ascending: false });
     
     if (error) throw error;
