@@ -174,7 +174,7 @@ export const propertyService = {
 
 // Serviços para Tenants
 export const tenantService = {
-  // Buscar todos os inquilinos
+  // Buscar todos os inquilinos (método legado - mantido para compatibilidade)
   async getAll() {
     const { data, error } = await supabase
       .from('tenants')
@@ -183,6 +183,74 @@ export const tenantService = {
     
     if (error) throw error;
     return data || [];
+  },
+
+  // Buscar inquilinos com paginação otimizada
+  async getAllPaginated(offset: number = 0, limit: number = 20, filters?: {
+    status?: 'active' | 'inactive',
+    propertyId?: string
+  }) {
+    let query = supabase
+      .from('tenants')
+      .select(`
+        id,
+        property_id,
+        name,
+        email,
+        phone,
+        start_date,
+        monthly_rent,
+        status,
+        created_at
+      `, { count: 'exact' });
+
+    // Aplicar filtros se fornecidos
+    if (filters?.status) {
+      query = query.eq('status', filters.status);
+    }
+    if (filters?.propertyId) {
+      query = query.eq('property_id', filters.propertyId);
+    }
+
+    const { data, error, count } = await query
+      .range(offset, offset + limit - 1)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return { 
+      data: data || [], 
+      count: count || 0,
+      hasMore: (count || 0) > offset + limit 
+    };
+  },
+
+  // Buscar inquilinos ativos apenas
+  async getActiveTenantsMetadata(offset: number = 0, limit: number = 30) {
+    const { data, error, count } = await supabase
+      .from('tenants')
+      .select('id, name, property_id, monthly_rent, start_date', { count: 'exact' })
+      .eq('status', 'active')
+      .range(offset, offset + limit - 1)
+      .order('start_date', { ascending: false });
+    
+    if (error) throw error;
+    return { 
+      data: data || [], 
+      count: count || 0,
+      hasMore: (count || 0) > offset + limit 
+    };
+  },
+
+  // Buscar inquilino específico com todos os detalhes
+  async getById(id: string) {
+    const { data, error } = await supabase
+      .from('tenants')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
   },
 
   // Criar novo inquilino
