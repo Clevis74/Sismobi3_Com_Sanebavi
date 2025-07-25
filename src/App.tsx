@@ -403,6 +403,14 @@ function AppContent() {
       <SimpleOnboardingTour />
       <NotificationToastContainer />
       <HelpComponent />
+      
+      {/* Setup Wizard */}
+      {showSetupWizard && (
+        <SetupWizard
+          onComplete={() => setShowSetupWizard(false)}
+          onSkip={() => setShowSetupWizard(false)}
+        />
+      )}
     </div>
   );
 }
