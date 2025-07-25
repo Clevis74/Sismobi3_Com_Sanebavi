@@ -387,6 +387,7 @@ function AppContent() {
       
       {/* Componentes de UX */}
       <OnboardingTour />
+      <SimpleOnboardingTour />
       <NotificationToastContainer />
       <HelpComponent />
     </div>
