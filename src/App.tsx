@@ -79,6 +79,7 @@ setupPersistentCache(queryClient).then((client) => {
 
 function AppContent() {
   const { isActivated } = useActivation();
+  const { isSimpleMode } = useSimpleMode();
   const [showFinancialValues, setShowFinancialValues] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [supabaseAvailable, setSupabaseAvailable] = useState(false);
