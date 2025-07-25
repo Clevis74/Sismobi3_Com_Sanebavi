@@ -38,6 +38,7 @@ import { Property, Tenant, Transaction, Document, EnergyBill, WaterBill } from '
 import { Informor } from './types/informor';
 import { useState } from 'react';
 
+// Configuração otimizada do QueryClient com cache persistente
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -58,6 +59,13 @@ const queryClient = new QueryClient({
       retry: 1, // Apenas uma tentativa para mutações
     }
   },
+});
+
+// Configurar cache persistente
+setupPersistentCache(queryClient).then((client) => {
+  console.log('✅ Sistema de cache otimizado inicializado');
+}).catch((error) => {
+  console.warn('⚠️ Erro ao configurar cache persistente:', error);
 });
 
 function AppContent() {
