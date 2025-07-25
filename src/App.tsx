@@ -5,6 +5,9 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import { setupPersistentCache } from './utils/persistentCache';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { OnboardingProvider } from './contexts/OnboardingContext';
+import { NotificationProvider } from './components/UI/EnhancedNotifications';
 import { ActivationProvider, useActivation } from './contexts/ActivationContext';
 import { Header } from './components/Layout/Header';
 import { Sidebar } from './components/Layout/Sidebar';
