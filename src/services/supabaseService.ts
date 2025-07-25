@@ -4,12 +4,20 @@ import { Informor } from '../types/informor';
 
 // Serviços para Properties
 export const propertyService = {
-  // Buscar todas as propriedades
+  // Buscar todas as propriedades (método legado - mantido para compatibilidade)
   async getAll() {
     const { data, error } = await supabase
       .from('properties')
       .select(`
-        *,
+        id,
+        name,
+        address,
+        energy_unit_name,
+        type,
+        purchase_price,
+        rent_value,
+        status,
+        created_at,
         tenants (
           id,
           name,
@@ -31,6 +39,85 @@ export const propertyService = {
     
     if (error) throw error;
     return data || [];
+  },
+
+  // Buscar propriedades com paginação otimizada
+  async getAllPaginated(offset: number = 0, limit: number = 20) {
+    const { data, error, count } = await supabase
+      .from('properties')
+      .select(`
+        id,
+        name,
+        address,
+        energy_unit_name,
+        type,
+        rent_value,
+        status,
+        created_at,
+        tenants!inner (
+          id,
+          name,
+          email,
+          phone,
+          monthly_rent,
+          status
+        )
+      `, { count: 'exact' })
+      .range(offset, offset + limit - 1)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return { 
+      data: data || [], 
+      count: count || 0,
+      hasMore: (count || 0) > offset + limit 
+    };
+  },
+
+  // Buscar propriedades apenas com metadados (ultra rápido)
+  async getAllMetadata(offset: number = 0, limit: number = 50) {
+    const { data, error, count } = await supabase
+      .from('properties')
+      .select('id, name, address, status, rent_value, created_at', { count: 'exact' })
+      .range(offset, offset + limit - 1)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return { 
+      data: data || [], 
+      count: count || 0,
+      hasMore: (count || 0) > offset + limit 
+    };
+  },
+
+  // Buscar propriedade específica com todos os detalhes
+  async getById(id: string) {
+    const { data, error } = await supabase
+      .from('properties')
+      .select(`
+        *,
+        tenants (
+          id,
+          name,
+          email,
+          cpf,
+          phone,
+          start_date,
+          agreed_payment_date,
+          monthly_rent,
+          deposit,
+          payment_method,
+          installments,
+          deposit_paid_installments,
+          formalized_contract,
+          status
+        )
+      `)
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
   },
 
   // Criar nova propriedade
