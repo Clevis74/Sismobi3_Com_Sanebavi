@@ -15,8 +15,6 @@ import { SyncIndicator } from './components/Layout/SyncIndicator';
 import { OnboardingTour } from './components/Onboarding/OnboardingTour';
 import { NotificationToastContainer } from './components/UI/EnhancedNotifications';
 import { useAllKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
-import { Sidebar } from './components/Layout/Sidebar';
-import { SyncIndicator } from './components/Layout/SyncIndicator';
 import { Dashboard } from './components/Dashboard/Dashboard';
 import { PropertyManager } from './components/Properties/PropertyManager';
 import { TenantManager } from './components/Tenants/TenantManager';
