@@ -15,6 +15,9 @@ import {
   Shield,
   CreditCard
 } from 'lucide-react';
+import { useSimpleMode } from '../../contexts/SimpleModeContext';
+import { SimpleNavigation } from './SimpleNavigation';
+import { SimpleModeToggle } from '../UI/SimpleModeToggle';
 
 
 const menuItems = [
